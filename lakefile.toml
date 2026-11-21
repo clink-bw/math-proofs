@@ -1,0 +1,21 @@
+name = "MathProofs"
+version = "0.1.0"
+keywords = ["math"]
+defaultTargets = ["BeattyGaps"]
+
+[leanOptions]
+pp.unicode.fun = true # pretty-prints `fun a ↦ b`
+relaxedAutoImplicit = false
+weak.linter.mathlibStandardSet = true
+maxSynthPendingDepth = 3
+
+[[require]]
+name = "mathlib"
+scope = "leanprover-community"
+rev = "v4.37.0-rc1"
+
+# One library per project, all under lean/.  Add a new [[lean_lib]] block for each new project
+# and list it in defaultTargets.
+[[lean_lib]]
+name = "BeattyGaps"
+srcDir = "lean"

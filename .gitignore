@@ -1,0 +1,16 @@
+# Lean build output and dependencies (about 8 GB; restored by `lake exe cache get`)
+/.lake
+
+# Python
+/.venv
+__pycache__/
+*.pyc
+
+# Third-party material kept locally for reference, not redistributed here
+/*/literature/
+/*/data/
+
+# Compiled helpers and OS files
+*.o
+*.out
+.DS_Store
