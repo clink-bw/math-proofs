@@ -41,6 +41,12 @@ gap set is always finite, without a way to compute it. The contribution here is 
 sets for these pairs, the correction to A352676, the drift theorem, and the formal proofs.
 [novelty-log.md](novelty-log.md) records what was searched and read.
 
+## Paper
+
+[paper/beatty-gaps.pdf](paper/beatty-gaps.pdf) is a draft write-up of these results, with
+full proofs (LaTeX source alongside). It is a preprint: it has not been peer reviewed, and its
+final section states how AI tools were used.
+
 ## Files
 
 * `../lean/BeattyGaps/` - the Lean proofs. `Basic.lean` has the definitions (`Beatty`, `IsGap`);

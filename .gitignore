@@ -14,3 +14,10 @@ __pycache__/
 *.o
 *.out
 .DS_Store
+
+# LaTeX build files
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
