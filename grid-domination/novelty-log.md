@@ -1,8 +1,9 @@
 # Prior-work search for the grid {2}-domination results
 
-Searched on 21 November 2026. The question: were Conjecture 2.5 (the 3 × n grid) and Conjecture 3.7
-(the 4 × n grid) of Lee and Liu, *The integer {2}-domination number of grids*
-([arXiv:2502.00134](https://arxiv.org/abs/2502.00134)), already settled?
+Two searches, on 21 and 22 November 2026. The first asked: were Conjecture 2.5 (the 3 × n grid)
+and Conjecture 3.7 (the 4 × n grid) of Lee and Liu, *The integer {2}-domination number of grids*
+([arXiv:2502.00134](https://arxiv.org/abs/2502.00134)), already settled? The second asked: are
+the values for 5 to 10 rows already known? The second search is in its own section at the end.
 
 Each item says how far it was read: **full** (the text itself), **abstract**, or **snippet**
 (seen only in search results or in another paper's citation).
@@ -30,9 +31,10 @@ Each item says how far it was read: **full** (the text itself), **abstract**, or
      proof (6 modules, 1183 lines) that had compiled on the author's machine but was not yet
      merged; no four-row file was in the repository's `Domination` folder on 21 November 2026.
      Read: issue and comment in full through the GitHub API.
-3. So the results here are **not new mathematics**. What this project adds is an independent proof
-   and an independently written Lean formalisation of both, plus the exact value of the 4 × n
-   number for every n ≥ 1 in Lean. As far as this search could tell, the Lean proof of the 4 × n
+3. So the results for three and four rows are **not new mathematics**. For those rows this
+   project adds an independent proof and an independently written Lean formalisation of both,
+   plus the exact value of the 4 × n number for every n ≥ 1 in Lean. (Five to ten rows are a
+   separate matter; see the second search below.) As far as this search could tell, the Lean proof of the 4 × n
    case here is the first one publicly available, but that could change at any moment and should
    not be claimed without re-checking the repository above.
 
@@ -104,3 +106,57 @@ None does. The details:
 * The Kuan thesis was not read in full.
 * Google Scholar's "cited by" list and MathSciNet were not available.
 * The Lean code in the other repository was not compiled or compared with the code here.
+
+## Second search: five or more rows (22 November 2026)
+
+### Conclusion
+
+1. **Nothing found.** No paper, preprint, OEIS entry or repository was found that gives the
+   integer {2}-domination number of the m × n grid for any m ≥ 5, or a formula for general m.
+2. **One paper that might contain such values could not be read**, so the results for 5 to 10
+   rows should be described as "apparently new", not as certainly new:
+   **E. O. Hare, *k-weight domination and fractional domination of P_m × P_n*, Congr. Numer. 78
+   (1990) 71–80** (zbMATH 0862.05063). Read: the zbMATH **summary** only; the journal volume is
+   not online. Its "k-weight domination number" is the same thing as the integer {k}-domination
+   number (weights in {0, ..., k}, every closed neighbourhood sums to at least k). The summary
+   says it gives an algorithm for P_m × P_n for fixed k, an exact construction for P_2 × P_n, and
+   "other examples for more general P_m × P_n". Whether it tabulates k = 2 for m ≥ 5 is unknown.
+   Lee and Liu do not cite it; their Theorem 2.3 (two rows) may overlap with it. Hare's 1989
+   Clemson thesis may also be relevant and was not found online.
+3. The other repository has nothing for five or more rows. On 22 November 2026 its issue 17664
+   (four rows) was still open, with no four-row Lean file merged.
+
+### What was checked
+
+| Source | Query | Result |
+|---|---|---|
+| arXiv API | about 20 phrase and topic queries ({2}-domination, integer domination, {k}-domination, double domination, fractional domination, each with grid or Cartesian product of paths), date-restricted sweeps for 2024 to 2026, both authors | only Lee and Liu or unrelated papers; arXiv:2502.00134 is still v1 |
+| zbMATH Open | {2}-domination and grid; {k}-domination; k-weight domination; fractional domination and grid; double and tuple domination with grid; author Hare 1989 to 1995 | found the Hare papers below; nothing with values for m ≥ 5 |
+| Crossref, OpenAlex | journal version of Lee and Liu; citing works; integer domination and grid since 2024 | none; 0 citing works |
+| OEIS | the first 16 values for 5, 6, 7 and 8 rows; the square-grid values 2, 3, 5, 8, 13, 18, 24, 31; keywords | 6, 7, 8 rows: nothing. The 5-row values agree with A047290 (numbers congruent to 1, 4, 6 mod 7, that is ⌊(7n + 5)/3⌋) for n ≤ 30 and differ from n = 31 on (73 against 74); that entry does not mention domination. The square values match the start of A081612, an unrelated sequence whose next terms differ |
+| GitHub REST API | the other repository: issues, pull requests and the `Domination` folder, about 20 searches | only the three-row and four-row items already recorded |
+| Web search | about 20 queries | nothing further |
+| Google Scholar, Semantic Scholar | | not accessible (interstitial; rate limit) |
+
+### Related results used for comparison in the paper
+
+* **Fractional domination** (2γ_f ≤ γ_{2}): **E. O. Hare, *Fibonacci numbers and fractional
+  domination of P_m × P_n*, Fibonacci Quart. 32 (1994) 69–73.** Read: **full**. Bounds
+  n C_m + O(1) with C_3 = 5/7, C_4 = 10/11, C_5 = 10/9, C_6 = 38/29, C_7 = 71/47, C_8 = 65/38;
+  exact only for two rows. Twice these rates (10/7, 20/11, 20/9, 76/29, 142/47, 65/19) lie
+  strictly below the {2}-domination rates found here, so that lower bound is not tight for
+  m ≥ 3.
+* **Ordinary domination** (γ_{2} ≤ 2γ): **Alanko, Crevals, Isopoussu, Östergård, Pettersson,
+  *Computing the domination number of grid graphs*, Electron. J. Combin. 18 (2011) P141**, and
+  **Gonçalves, Pinlou, Rao, Thomassé**, arXiv:1102.5206. Read: the table of formulas in each,
+  **directly**; the small-n exceptions were recomputed by a separate dynamic programme. Growth of
+  γ per column for 5, 6, 7, 8 rows: 6/5, 10/7, 5/3, 15/8. Chang and Clark (J. Graph Theory 17,
+  1993), where several of these were first proved, was **not** read (paywall).
+* Stewart and Hare, Congr. Numer. 91 (1992) 35–42, said to contain fractional domination values
+  for some small grids: zbMATH **summary** only.
+
+### Not done
+
+* Hare 1990 and Hare's thesis were not read. This is the main gap.
+* Google Scholar and MathSciNet were not available.
+

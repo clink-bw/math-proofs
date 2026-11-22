@@ -46,37 +46,44 @@ theorem wf_zero (m : ℕ) : wf m 0 0 = true := by
 
 /-! ### Unpacking the checks -/
 
-theorem transOK_spec {m offs N TR : ℕ} {fins : List ℕ} (h : transOK m offs N TR fins = true)
-    {b ν : ℕ} (hb : b < 3 ^ m) (hν : ν < 3 ^ m) (hw : wf m b ν = true) :
-    idx m offs b ν < N ∧ (geq m 0 ν = true → idx m offs b ν ∈ fins) ∧
-      ∀ d, d < 3 ^ m → geq m d ν = true →
-        wf m d (need m b d) = true ∧
-          entry m TR (idx m offs b ν) d = idx m offs d (need m b d) + 1 := by
-  unfold transOK at h
-  have h2 := all_range (all_range h hb) hν
-  have h3 := bimp h2 hw
-  obtain ⟨h4, h5⟩ := and_true_split h3
-  obtain ⟨h6, h7⟩ := and_true_split h4
-  have h6' : idx m offs b ν < N := Nat.le_of_ble_eq_true h6
-  refine ⟨h6', ?_, ?_⟩
-  · intro hg
-    have h8 := bimp h7 hg
-    obtain ⟨k, hk, hk2⟩ := List.any_eq_true.mp h8
-    rw [Nat.eq_of_beq_eq_true hk2]
-    exact hk
-  · intro d hd hg
-    have h9 := bimp (all_range h5 hd) hg
-    obtain ⟨h10, h11⟩ := and_true_split h9
-    exact ⟨h10, Nat.eq_of_beq_eq_true h11⟩
+theorem allRows_spec {f : ℕ → ℕ → Bool} : ∀ (rows : List ℕ) (k0 : ℕ),
+    allRows f k0 rows = true → ∀ i, i < rows.length → f (k0 + i) (rows.getD i 0) = true := by
+  intro rows
+  induction rows with
+  | nil =>
+    intro k0 _ i hi
+    simp at hi
+  | cons row rest ih =>
+    intro k0 h i hi
+    obtain ⟨h1, h2⟩ :=
+      and_true_split (show (f k0 row && allRows f (k0 + 1) rest) = true from h)
+    rcases i with _ | i
+    · simpa using h1
+    · have h3 := ih (k0 + 1) h2 i (by simpa using hi)
+      have e : k0 + (i + 1) = k0 + 1 + i := by omega
+      rw [e]
+      simpa using h3
 
-theorem relaxOK_spec {m N TR A B K R : ℕ} (h : relaxOK m N TR A B K R = true) {k d : ℕ}
-    (hk : k < N) (hd : d < 3 ^ m) {t : ℕ} (he : entry m TR k d = t + 1) :
-    fld B t + R ≤ fld A k + K * wt m d := by
-  unfold relaxOK at h
-  have h2 := all_range (all_range h hk) hd
-  unfold relaxAt at h2
-  rw [he, Nat.add_sub_cancel] at h2
-  exact Nat.le_of_ble_eq_true (or_true_right h2 (beq_succ_zero t))
+/-- If a check passes on every chunk of the rows, it holds for every row. -/
+theorem chunk_spec {f : ℕ → ℕ → Bool} {rows : List ℕ} {len nch : ℕ} (hlen : 0 < len)
+    (hN : rows.length ≤ nch * len) (h : ∀ c, c < nch → chunkOK f rows len c = true)
+    {k : ℕ} (hk : k < rows.length) : f k (rows.getD k 0) = true := by
+  have hc : k / len < nch := by
+    apply Nat.div_lt_of_lt_mul
+    calc k < rows.length := hk
+      _ ≤ nch * len := hN
+      _ = len * nch := Nat.mul_comm _ _
+  have hdm : k / len * len + k % len = k := Nat.div_add_mod' k len
+  have hmod : k % len < len := Nat.mod_lt _ hlen
+  have hsub : k % len < ((rows.drop (k / len * len)).take len).length := by
+    rw [List.length_take, List.length_drop]
+    omega
+  have h1 := allRows_spec _ _ (h (k / len) hc) (k % len) hsub
+  have e : ((rows.drop (k / len * len)).take len).getD (k % len) 0 = rows.getD k 0 := by
+    rw [List.getD_eq_getElem?_getD, List.getD_eq_getElem?_getD,
+      List.getElem?_take_of_lt hmod, List.getElem?_drop, hdm]
+  rw [hdm, e] at h1
+  exact h1
 
 theorem finOK_spec {fins : List ℕ} {T g : ℕ} (h : finOK fins T g = true) {k : ℕ} (hk : k ∈ fins) :
     g ≤ fld T k :=
@@ -93,15 +100,64 @@ namespace Cert.Valid
 
 variable {c : Cert}
 
+theorem size_spec (hc : c.Valid) :
+    c.rows.length = c.N ∧ 0 < c.chunk ∧ c.N ≤ c.nch * c.chunk ∧
+      0 < c.tchunk ∧ c.N ≤ c.tnch * c.tchunk := by
+  obtain ⟨hs1234, hs5⟩ := and_true_split hc.size
+  obtain ⟨hs123, hs4⟩ := and_true_split hs1234
+  obtain ⟨hs12, hs3⟩ := and_true_split hs123
+  obtain ⟨hs1, hs2⟩ := and_true_split hs12
+  exact ⟨Nat.eq_of_beq_eq_true hs1, Nat.le_of_ble_eq_true hs2, Nat.le_of_ble_eq_true hs3,
+    Nat.le_of_ble_eq_true hs4, Nat.le_of_ble_eq_true hs5⟩
+
+/-- What the checks `st` and `trans` say about a state `(b, ν)`: its position is below `N`, it
+is listed as final if it is final, and its row of the transition table is correct. -/
+theorem state_spec (hc : c.Valid) {b ν : ℕ} (hb : b < 3 ^ c.m) (hν : ν < 3 ^ c.m)
+    (hw : wf c.m b ν = true) :
+    idx c.m c.offs b ν < c.N ∧ (geq c.m 0 ν = true → idx c.m c.offs b ν ∈ c.fins) ∧
+      ∀ d, d < 3 ^ c.m → geq c.m d ν = true →
+        wf c.m d (need c.m b d) = true ∧
+          rowEntry (c.rows.getD (idx c.m c.offs b ν) 0) d
+            = idx c.m c.offs d (need c.m b d) + 1 := by
+  obtain ⟨hlenN, -, -, hchunk, hcover⟩ := hc.size_spec
+  have hst := hc.st
+  unfold stOK at hst
+  obtain ⟨h3, h4⟩ := and_true_split (bimp (all_range (all_range hst hb) hν) hw)
+  have hN : idx c.m c.offs b ν < c.N := Nat.le_of_ble_eq_true h3
+  have hST : fld32 c.ST (idx c.m c.offs b ν) = b + 3 ^ c.m * ν := Nat.eq_of_beq_eq_true h4
+  have hrow := chunk_spec hchunk (by rw [hlenN]; exact hcover) hc.trans
+    (k := idx c.m c.offs b ν) (by rw [hlenN]; exact hN)
+  unfold transRow rowOK at hrow
+  have hbmod : (b + 3 ^ c.m * ν) % 3 ^ c.m = b := by
+    rw [Nat.add_mul_mod_self_left, Nat.mod_eq_of_lt hb]
+  have hbdiv : (b + 3 ^ c.m * ν) / 3 ^ c.m = ν := by
+    rw [Nat.add_mul_div_left _ _ (by positivity), Nat.div_eq_of_lt hb, Nat.zero_add]
+  rw [hST, hbmod, hbdiv] at hrow
+  obtain ⟨h5, h6⟩ := and_true_split hrow
+  refine ⟨hN, fun hg => ?_, fun d hd hg => ?_⟩
+  · obtain ⟨k, hk, hk2⟩ := List.any_eq_true.mp (bimp h5 hg)
+    rw [Nat.eq_of_beq_eq_true hk2]
+    exact hk
+  · obtain ⟨h7, h8⟩ := and_true_split (bimp (all_range h6 hd) hg)
+    exact ⟨h7, Nat.eq_of_beq_eq_true h8⟩
+
 /-- A checked table inequality holds along every transition of the automaton. -/
-theorem relax (hc : c.Valid) {A B K R : ℕ} (h : relaxOK c.m c.N c.TR A B K R = true)
+theorem relax (hc : c.Valid) {A B K R : ℕ}
+    (h : ∀ ch, ch < c.nch → chunkOK (relaxRow c.m A B K R) c.rows c.chunk ch = true)
     {b ν d : ℕ} (hb : b < 3 ^ c.m) (hν : ν < 3 ^ c.m) (hw : wf c.m b ν = true)
     (hd : d < 3 ^ c.m) (hg : geq c.m d ν = true) :
     wf c.m d (need c.m b d) = true ∧
       fld B (idx c.m c.offs d (need c.m b d)) + R ≤ fld A (idx c.m c.offs b ν) + K * wt c.m d := by
-  obtain ⟨hN, -, htr⟩ := transOK_spec hc.trans hb hν hw
+  obtain ⟨hlenN, hchunk, hcover, -, -⟩ := hc.size_spec
+  obtain ⟨hN, -, htr⟩ := hc.state_spec hb hν hw
   obtain ⟨hw', he⟩ := htr d hd hg
-  exact ⟨hw', relaxOK_spec h hN hd he⟩
+  have hrow := chunk_spec hchunk (by rw [hlenN]; exact hcover) h
+    (k := idx c.m c.offs b ν) (by rw [hlenN]; exact hN)
+  unfold relaxRow at hrow
+  have h2 := all_range hrow hd
+  unfold relaxAt at h2
+  rw [he, Nat.add_sub_cancel] at h2
+  exact ⟨hw', Nat.le_of_ble_eq_true (or_true_right h2 (beq_succ_zero _))⟩
 
 /-- The potential argument: once `F + R * j ≤ K * (weight so far) + OFF` holds at the current
 state, it keeps holding, and at a final state it gives the bound. -/
@@ -116,7 +172,7 @@ theorem lower_stat (hc : c.Valid) :
     intro b ν j W0 s hb hν hw hF hrun hfin
     rw [run_nil] at hrun
     obtain rfl := Option.some.inj hrun
-    obtain ⟨-, hmem, -⟩ := transOK_spec hc.trans hb hν hw
+    obtain ⟨-, hmem, -⟩ := hc.state_spec hb hν hw
     have := finOK_spec hc.fin (hmem hfin)
     simp only [List.length_nil, wtL_nil, Nat.add_zero]
     omega
@@ -144,7 +200,7 @@ theorem handoff (hc : c.Valid) (l : List ℕ) (b ν W0 : ℕ) (s : ℕ × ℕ) (
     (hT : fld (c.tab c.J) (idx c.m c.offs b ν) ≤ W0)
     (hrun : run c.m (b, ν) l = some s) (hfin : geq c.m 0 s.2 = true) :
     c.C + c.R * (c.J + l.length) ≤ c.K * (W0 + wtL c.m l) := by
-  obtain ⟨hN, -, -⟩ := transOK_spec hc.trans hb hν hw
+  obtain ⟨hN, -, -⟩ := hc.state_spec hb hν hw
   have hl := linkOK_spec hc.link hN
   have hmul : c.K * fld (c.tab c.J) (idx c.m c.offs b ν) ≤ c.K * W0 := Nat.mul_le_mul_left _ hT
   exact hc.lower_stat l b ν c.J W0 s hb hν hw (by omega) hrun hfin
@@ -194,7 +250,7 @@ theorem small_aux (hc : c.Valid) :
     intro b ν j W0 s g hb hν hw hT _ hg hrun hfin
     rw [run_nil] at hrun
     obtain rfl := Option.some.inj hrun
-    obtain ⟨-, hmem, -⟩ := transOK_spec hc.trans hb hν hw
+    obtain ⟨-, hmem, -⟩ := hc.state_spec hb hν hw
     rw [List.length_nil, Nat.add_zero] at hg
     have := finOK_spec hg (hmem hfin)
     rw [wtL_nil]

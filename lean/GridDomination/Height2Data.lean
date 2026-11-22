@@ -13,6 +13,9 @@ This file contains numbers and lists found by a script, and theorems of the form
 
 set_option linter.style.longLine false
 set_option maxRecDepth 1000000
+-- Check the proofs one after another: each is a large kernel computation, and running them
+-- all at once needs several gigabytes of memory.
+set_option Elab.async false
 
 namespace GridDomination.Height2
 
@@ -22,7 +25,35 @@ def cert : Cert where
   m := 2
   offs := 0x160015001400130012000e000d00090000
   N := 23
-  TR := 0x1701601501401300f00e00a00101701601501401300f00e00a00201701601501401301000e00b00301701601501401300f00e00a00401701601501401300f00e00a00501701600001401300000000000001701601501401301000000000001701600001401300000e00b00001701601501401301000e00b00601701601501401301100e00c00701701600001401300000000000001701601501401301100000000001701600001401300000e00c00001701601501401301100e00c00801700000000000000000000000001701600000000000000000000001701601500000000000000000001700000001400000000000000001701600001401300000000000001701601501401301200000000001700000001400000000e00000001701600001401300000e00d00001701601501401301200e00d009
+  ST := 0x800000007000000060000000500000004000000270000001e0000000c0000000300000002000000250000001c0000000a00000001000000480000003f000000360000002d000000240000001b000000120000000900000000
+  rows := [
+    0x1701601501401301200e00d009,
+    0x1701600001401300000e00d000,
+    0x1700000001400000000e000000,
+    0x17016015014013012000000000,
+    0x17016000014013000000000000,
+    0x17000000014000000000000000,
+    0x17016015000000000000000000,
+    0x17016000000000000000000000,
+    0x17000000000000000000000000,
+    0x1701601501401301100e00c008,
+    0x1701600001401300000e00c000,
+    0x17016015014013011000000000,
+    0x17016000014013000000000000,
+    0x1701601501401301100e00c007,
+    0x1701601501401301000e00b006,
+    0x1701600001401300000e00b000,
+    0x17016015014013010000000000,
+    0x17016000014013000000000000,
+    0x1701601501401300f00e00a005,
+    0x1701601501401300f00e00a004,
+    0x1701601501401301000e00b003,
+    0x1701601501401300f00e00a002,
+    0x1701601501401300f00e00a001]
+  tchunk := 23
+  tnch := 1
+  chunk := 23
+  nch := 1
   fins := [
     0, 9, 13, 14, 18, 19, 20, 21, 22]
   tabs := [
@@ -38,15 +69,33 @@ def cert : Cert where
 theorem start_ok : Nat.beq (fld (cert.tab 0) (idx cert.m cert.offs 0 0)) 0 = true := by
   decide +kernel
 
-theorem trans_ok : transOK cert.m cert.offs cert.N cert.TR cert.fins = true := by
+theorem size_ok :
+    (Nat.beq cert.rows.length cert.N && Nat.blt 0 cert.chunk &&
+      Nat.ble cert.N (cert.nch * cert.chunk) && Nat.blt 0 cert.tchunk &&
+      Nat.ble cert.N (cert.tnch * cert.tchunk)) = true := by
   decide +kernel
 
-theorem step_ok_0 :
-    relaxOK cert.m cert.N cert.TR (cert.tab 0) (cert.tab (0 + 1)) 1 0 = true := by
+theorem st_ok : stOK cert.m cert.offs cert.N cert.ST = true := by
   decide +kernel
 
-theorem steps_ok : ∀ j, j < cert.J →
-    relaxOK cert.m cert.N cert.TR (cert.tab j) (cert.tab (j + 1)) 1 0 = true
+theorem trans_ok_0 : chunkOK (transRow cert.m cert.offs cert.ST cert.fins) cert.rows cert.tchunk 0 = true := by
+  decide +kernel
+
+theorem trans_ok : ∀ ch, ch < cert.tnch →
+    chunkOK (transRow cert.m cert.offs cert.ST cert.fins) cert.rows cert.tchunk ch = true
+  | 0, _ => trans_ok_0
+  | ch + 1, h => absurd h (by change ¬ (ch + 1 < 1); omega)
+
+theorem step_ok_0_0 : chunkOK (relaxRow cert.m (cert.tab 0) (cert.tab (0 + 1)) 1 0) cert.rows cert.chunk 0 = true := by
+  decide +kernel
+
+theorem step_ok_0 : ∀ ch, ch < cert.nch →
+    chunkOK (relaxRow cert.m (cert.tab 0) (cert.tab (0 + 1)) 1 0) cert.rows cert.chunk ch = true
+  | 0, _ => step_ok_0_0
+  | ch + 1, h => absurd h (by change ¬ (ch + 1 < 1); omega)
+
+theorem steps_ok : ∀ j, j < cert.J → ∀ ch, ch < cert.nch →
+    chunkOK (relaxRow cert.m (cert.tab j) (cert.tab (j + 1)) 1 0) cert.rows cert.chunk ch = true
   | 0, _ => step_ok_0
   | j + 1, h => absurd h (by change ¬ (j + 1 < 1); omega)
 
@@ -54,18 +103,24 @@ theorem link_ok :
     linkOK cert.N (cert.tab cert.J) cert.F cert.K cert.R cert.J cert.OFF = true := by
   decide +kernel
 
-theorem stat_ok : relaxOK cert.m cert.N cert.TR cert.F cert.F cert.K cert.R = true := by
+theorem stat_ok_0 : chunkOK (relaxRow cert.m cert.F cert.F cert.K cert.R) cert.rows cert.chunk 0 = true := by
   decide +kernel
+
+theorem stat_ok : ∀ ch, ch < cert.nch →
+    chunkOK (relaxRow cert.m cert.F cert.F cert.K cert.R) cert.rows cert.chunk ch = true
+  | 0, _ => stat_ok_0
+  | ch + 1, h => absurd h (by change ¬ (ch + 1 < 1); omega)
 
 theorem fin_ok : finOK cert.fins cert.F (cert.C + cert.OFF) = true := by
   decide +kernel
 
 /-- All checks of the lower-bound certificate pass. -/
 theorem valid : cert.Valid :=
-  ⟨start_ok, trans_ok, steps_ok, link_ok, stat_ok, fin_ok⟩
+  ⟨start_ok, size_ok, st_ok, trans_ok, steps_ok, link_ok, stat_ok, fin_ok⟩
 
-/-- The value of `γ_{2}(P_2 □ P_n)` for `n ≥ 1`. -/
-def gamma (n : ℕ) : ℕ := n + 1
+/-- The value of `γ_{2}(P_2 □ P_n)` for `n ≥ 1`: `⌈(1 n + 1) / 1⌉`. -/
+def gamma (n : ℕ) : ℕ :=
+  n + 1
 
 /-- For `1 ≤ n < 1`: every final state has lower bound at least `gamma n` after `n` columns. -/
 theorem small_ok :
@@ -81,12 +136,10 @@ theorem words_ok :
     ((List.range' 1 0).all fun n => acceptOK 2 (words.getD n []) n (gamma n)) = true := by
   decide +kernel
 
-/-- A block of `2` columns of weight `2` that can be repeated any number of times. -/
-def cyc : List ℕ := [0, 4]
-
-/-- `baseL[r]`, `baseA[r]`, `baseB[r]`, for `r < 2`: lists of columns `A`, `B` with
-`|A| + |B| = baseL[r]`, congruent to `r` modulo `2`, such that `A ++ cyc ++ … ++ cyc ++ B`
-is accepted and has weight `⌈(1 n + 1) / 1⌉`, where `n` is its length. -/
+/-- `baseL[r]`, `baseA[r]`, `baseC[r]`, `baseB[r]`, for `r < 2`: lists of columns `A`, `C`, `B`
+such that `|A| + |B| = baseL[r]` is congruent to `r` modulo `2`, the block `C` has `2` columns
+and weight `2` and can be repeated any number of times, and `A ++ C ++ … ++ C ++ B` is accepted
+and has weight `⌈(1 n + 1) / 1⌉`, where `n` is its length. -/
 def baseL : List ℕ := [2, 1]
 
 @[inherit_doc baseL]
@@ -95,13 +148,18 @@ def baseA : List (List ℕ) := [
     [4]]
 
 @[inherit_doc baseL]
+def baseC : List (List ℕ) := [
+    [0, 4],
+    [0, 4]]
+
+@[inherit_doc baseL]
 def baseB : List (List ℕ) := [
     [1],
     []]
 
 theorem pump_ok :
     ((List.range 2).all fun r =>
-      pumpOK 2 (baseA.getD r []) cyc (baseB.getD r []) (baseL.getD r 0) 2
+      pumpOK 2 (baseA.getD r []) (baseC.getD r []) (baseB.getD r []) (baseL.getD r 0) 2
         ((1 * baseL.getD r 0 + 1 + 0) / 1) 2 &&
       Nat.beq (baseL.getD r 0 % 2) r && Nat.blt (baseL.getD r 0) (1 + 2)) = true := by
   decide +kernel

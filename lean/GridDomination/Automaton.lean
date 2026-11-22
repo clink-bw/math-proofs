@@ -71,31 +71,51 @@ never use that it is injective, and a collision could only make a check fail.) -
 def idx (m offs d ν : ℕ) : ℕ :=
   fld16 offs d + (List.range m).foldr (fun i acc => dg ν i + (3 - min 2 (tau m d i)) * acc) 0
 
-/-- Entry of the transition table: for the state in position `k` and the next column `d`, one
-more than the position of the state reached, or `0` if `d` is not allowed. -/
-def entry (m TR k d : ℕ) : ℕ := (TR >>> (12 * (k * 3 ^ m + d))) % 4096
+/-- Entry `k` of a table packed 32 bits per entry. -/
+def fld32 (T k : ℕ) : ℕ := (T >>> (32 * k)) % 4294967296
 
-/-- Check that the transition table `TR`, the number of states `N` and the list `fins` of
-positions of final states agree with the automaton. -/
-def transOK (m offs N TR : ℕ) (fins : List ℕ) : Bool :=
+/-- Entry `d` of one row of the transition table.  The row of a state lists, for every next
+column `d`, one more than the position of the state reached, or `0` if `d` is not allowed. -/
+def rowEntry (row d : ℕ) : ℕ := (row >>> (12 * d)) % 4096
+
+/-- Apply the check `f k row` to the rows of a list, where `k` counts up from the given start. -/
+def allRows (f : ℕ → ℕ → Bool) : ℕ → List ℕ → Bool
+  | _, [] => true
+  | k, row :: rest => f k row && allRows f (k + 1) rest
+
+/-- The check `f` on the rows numbered `c * len, …, c * len + len - 1`.  Checking the table in
+chunks keeps each kernel computation small. -/
+def chunkOK (f : ℕ → ℕ → Bool) (rows : List ℕ) (len c : ℕ) : Bool :=
+  allRows f (c * len) ((rows.drop (c * len)).take len)
+
+/-- Check: every state `(b, ν)` is recorded in the list of states `ST` at its position
+(`ST` holds the number `b + 3 ^ m * ν` at position `idx b ν`), and positions are below `N`. -/
+def stOK (m offs N ST : ℕ) : Bool :=
   (List.range (3 ^ m)).all fun b => (List.range (3 ^ m)).all fun ν =>
     !wf m b ν ||
-      (Nat.blt (idx m offs b ν) N &&
-        (!geq m 0 ν || fins.any (Nat.beq (idx m offs b ν))) &&
-        (List.range (3 ^ m)).all fun d =>
-          !geq m d ν || (wf m d (need m b d) &&
-            Nat.beq (entry m TR (idx m offs b ν) d) (idx m offs d (need m b d) + 1)))
+      (Nat.blt (idx m offs b ν) N && Nat.beq (fld32 ST (idx m offs b ν)) (b + 3 ^ m * ν))
 
-/-- One comparison of `relaxOK`: `e` is a transition-table entry, `a` the source value, `w` the
+/-- Check that `row` is the row of the transition table for the state `(b, ν)` in position `k`,
+and that `k` is listed in `fins` if the state is final. -/
+def rowOK (m offs : ℕ) (fins : List ℕ) (k b ν row : ℕ) : Bool :=
+  (!geq m 0 ν || fins.any (Nat.beq k)) &&
+    (List.range (3 ^ m)).all fun d =>
+      !geq m d ν || (wf m d (need m b d) &&
+        Nat.beq (rowEntry row d) (idx m offs d (need m b d) + 1))
+
+/-- `rowOK` for the state stored at position `k` of `ST`. -/
+def transRow (m offs ST : ℕ) (fins : List ℕ) (k row : ℕ) : Bool :=
+  rowOK m offs fins k (fld32 ST k % 3 ^ m) (fld32 ST k / 3 ^ m) row
+
+/-- One comparison of `relaxRow`: `e` is a transition-table entry, `a` the source value, `w` the
 weight of the column read. -/
 def relaxAt (B a K R e w : ℕ) : Bool :=
   Nat.beq e 0 || Nat.ble (fld B (e - 1) + R) (a + K * w)
 
-/-- Check: along every transition `s → t` reading a column `d`,
-`B t + R ≤ A s + K * (weight of d)`. -/
-def relaxOK (m N TR A B K R : ℕ) : Bool :=
-  (List.range N).all fun k => (List.range (3 ^ m)).all fun d =>
-    relaxAt B (fld A k) K R (entry m TR k d) (wt m d)
+/-- Check, for the state in position `k` with transition row `row`: along every transition
+`s → t` reading a column `d`, `B t + R ≤ A s + K * (weight of d)`. -/
+def relaxRow (m A B K R k row : ℕ) : Bool :=
+  (List.range (3 ^ m)).all fun d => relaxAt B (fld A k) K R (rowEntry row d) (wt m d)
 
 /-- Check: every final state has entry at least `g` in the table `T`. -/
 def finOK (fins : List ℕ) (T g : ℕ) : Bool := fins.all fun k => Nat.ble g (fld T k)
@@ -106,20 +126,27 @@ def linkOK (N A F K R J OFF : ℕ) : Bool :=
 
 /-- The data of a lower-bound certificate for height `m`.
 
-* `offs`, `N`, `TR`, `fins` describe the automaton: where each state sits in the tables, how many
-  states there are, the transition table, and which states are final.
+* `offs`, `N`, `ST`, `rows`, `fins` describe the automaton: where each state sits in the tables,
+  how many states there are, the list of states, the transition table (one row per state), and
+  which states are final.  The table is checked against the automaton in `tnch` chunks of
+  `tchunk` rows, and the inequalities along transitions in `nch` chunks of `chunk` rows.
 * `tabs[j]`, for `j ≤ J`, is a table of lower bounds for the weight of `j` columns ending in each
   state.
 * `F` is a potential showing that from column `J` on, every further column costs at least `R / K`
   on average; `OFF` is a constant added to keep the entries of `F` nonnegative.
 
-The conclusion (`Cert.Valid.lower` in `Certificate.lean`) is `C + R * n ≤ K * weight` for every
-accepted list of `n ≥ J` columns. -/
+The conclusion (`Cert.Valid.lower_grid` in `Certificate.lean`) is `C + R * n ≤ K * weight` for
+every `{2}`-dominating function of the `m × n` grid with `n ≥ J`. -/
 structure Cert where
   m : ℕ
   offs : ℕ
   N : ℕ
-  TR : ℕ
+  ST : ℕ
+  rows : List ℕ
+  tchunk : ℕ
+  tnch : ℕ
+  chunk : ℕ
+  nch : ℕ
   fins : List ℕ
   tabs : List ℕ
   J : ℕ
@@ -135,10 +162,15 @@ def Cert.tab (c : Cert) (j : ℕ) : ℕ := c.tabs.getD j 0
 /-- The checks that make a certificate valid.  Each field is a computation for Lean's kernel. -/
 structure Cert.Valid (c : Cert) : Prop where
   start : Nat.beq (fld (c.tab 0) (idx c.m c.offs 0 0)) 0 = true
-  trans : transOK c.m c.offs c.N c.TR c.fins = true
-  steps : ∀ j, j < c.J → relaxOK c.m c.N c.TR (c.tab j) (c.tab (j + 1)) 1 0 = true
+  size : (Nat.beq c.rows.length c.N && Nat.blt 0 c.chunk && Nat.ble c.N (c.nch * c.chunk) &&
+    Nat.blt 0 c.tchunk && Nat.ble c.N (c.tnch * c.tchunk)) = true
+  st : stOK c.m c.offs c.N c.ST = true
+  trans : ∀ ch, ch < c.tnch →
+    chunkOK (transRow c.m c.offs c.ST c.fins) c.rows c.tchunk ch = true
+  steps : ∀ j, j < c.J → ∀ ch, ch < c.nch →
+    chunkOK (relaxRow c.m (c.tab j) (c.tab (j + 1)) 1 0) c.rows c.chunk ch = true
   link : linkOK c.N (c.tab c.J) c.F c.K c.R c.J c.OFF = true
-  stat : relaxOK c.m c.N c.TR c.F c.F c.K c.R = true
+  stat : ∀ ch, ch < c.nch → chunkOK (relaxRow c.m c.F c.F c.K c.R) c.rows c.chunk ch = true
   fin : finOK c.fins c.F (c.C + c.OFF) = true
 
 /-! ### Checks for explicit patterns -/
