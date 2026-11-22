@@ -19,8 +19,13 @@ open Finset
 namespace Height4
 
 theorem gamma_of_ge {n : ℕ} (hn : 49 ≤ n) : gamma n = (19 * n + 18) / 10 := by
+  have h1 : ¬ n = 1 := by omega
+  have h2 : ¬ n ∈ [4, 7, 8, 15, 18, 26, 37, 48] := by
+    intro h
+    simp at h
+    omega
   unfold gamma
-  rw [ite_eq_right (by omega), ite_eq_right (by simp; omega)]
+  rw [ite_eq_right h1, ite_eq_right h2]
 
 /-- Every `{2}`-dominating function of the `4 × n` grid weighs at least `gamma n`. -/
 theorem lower {n : ℕ} (hn : 1 ≤ n) (f : Fin 4 × Fin n → ℕ) (hf : IsDomFn (grid 4 n) 2 f) :

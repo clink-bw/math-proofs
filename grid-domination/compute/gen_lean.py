@@ -240,10 +240,7 @@ def wrap_list(items, indent="    "):
     return "\n".join(lines)
 
 
-GAMMA_DEF = {
-    2: ("n + 1", "n + 1"),
-    3: ("3 * n / 2 + 1", "3 * n / 2 + 1"),
-}
+GAMMA_DEF = {2: "n + 1", 3: "3 * n / 2 + 1"}
 
 
 def emit(D):
@@ -331,7 +328,7 @@ def emit(D):
         w("  else (19 * n + 18) / 10")
     else:
         w(f"/-- The value of `γ_{{2}}(P_{m} □ P_n)` for `n ≥ 1`. -/")
-        w(f"def gamma (n : ℕ) : ℕ := {GAMMA_DEF[m][0]}")
+        w(f"def gamma (n : ℕ) : ℕ := {GAMMA_DEF[m]}")
     w("")
     assert all(D["gam"][n] == gamma_py(m, n, D) for n in range(1, 150))
     w(f"/-- For `1 ≤ n < {J}`: every final state has lower bound at least `gamma n` after `n` columns. -/")

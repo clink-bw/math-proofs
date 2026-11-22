@@ -219,17 +219,19 @@ theorem run_of_dom (f : Fin m × Fin n → ℕ) (hf : IsDomFn (grid m n) 2 f) :
       rw [nbhd_sum_grid] at hdom
       have e1 : j - 1 + 1 = j := by omega
       have e2 : j - 1 + 2 = j + 1 := by omega
-      simp only [Fin.val_mk, e1, e2] at hdom
+      simp only [e1, e2] at hdom
       have hup : (if i = 0 then 0 else dg (col f j) (i - 1)) = min 2 (zext f i j) := by
         by_cases h0 : i = 0
-        · rw [ite_eq_left h0, zext_eq_zero_of_row f (Or.inl h0)] <;> rfl
+        · rw [ite_eq_left h0, zext_eq_zero_of_row f (Or.inl h0)]
+          rfl
         · rw [ite_eq_right h0, dg_col f j (by omega)]
           have : i - 1 + 1 = i := by omega
           rw [this]
       have hdown : (if i + 1 < m then dg (col f j) (i + 1) else 0) = min 2 (zext f (i + 2) j) := by
         by_cases h1 : i + 1 < m
         · rw [ite_eq_left h1, dg_col f j h1]
-        · rw [ite_eq_right h1, zext_eq_zero_of_row f (Or.inr (by omega))] <;> rfl
+        · rw [ite_eq_right h1, zext_eq_zero_of_row f (Or.inr (by omega))]
+          rfl
       rw [dg_need _ _ _ hi, dg_col f (j + 1) hi]
       unfold needAt tau
       rw [dg_col f (j - 1) hi, dg_col f j hi, hup, hdown]

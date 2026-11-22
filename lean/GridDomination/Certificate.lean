@@ -41,7 +41,8 @@ theorem wf_zero (m : ℕ) : wf m 0 0 = true := by
   unfold wf
   rw [List.all_eq_true]
   intro i _
-  rw [dg_zero] <;> rfl
+  rw [dg_zero]
+  rfl
 
 /-! ### Unpacking the checks -/
 
@@ -334,7 +335,7 @@ theorem exists_dom_of_pump {m : ℕ} {A C B : List ℕ} {L p W q : ℕ}
     obtain ⟨y, hB, hy⟩ := finalOpt_eq_true hfinal
     have hrun : run m (0, 0) (A ++ (rep C k ++ B)) = some y := by
       rw [run_append, hA]
-      show run m x (rep C k ++ B) = some y
+      change run m x (rep C k ++ B) = some y
       rw [run_append, run_rep hC k]
       exact hB
     have hlen : (A ++ (rep C k ++ B)).length = n := by

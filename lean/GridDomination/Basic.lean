@@ -82,8 +82,8 @@ theorem sum_neighbor_path {n : ℕ} (h : Fin n → ℕ) (v : Fin n) :
       simp [pathGraph_adj]
     rw [this, Finset.sum_filter]
     refine Finset.sum_congr rfl fun u _ => ?_
-    by_cases h1 : u.val + 1 = v.val <;> by_cases h2 : v.val + 1 = u.val <;>
-      simp [h1, h2] <;> omega
+    by_cases h1 : u.val + 1 = v.val <;> by_cases h2 : v.val + 1 = u.val <;> simp [h1, h2]
+    omega
   rw [key]
   congr 1
   · by_cases h0 : 1 ≤ v.val

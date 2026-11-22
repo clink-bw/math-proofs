@@ -26,7 +26,7 @@ conjectured it for 3 and 4 rows:
 
 Both conjectures are true as stated. All of the following are proved in Lean, with no `sorry`,
 no `native_decide`, and no axioms beyond Lean's standard three (`propext`, `Classical.choice`,
-`Quot.sound`).
+`Quot.sound`); `#print axioms` was run on each theorem in the table to confirm this.
 
 | Statement | Lean theorem |
 |---|---|
@@ -137,8 +137,8 @@ in `Certificate.lean`. So a bug in the script can only make the build fail; it c
 false theorem.
 
 **How far the kernel can be pushed.** The 4-row case is well within reach: the 389-state
-certificate checks in about two minutes of processor time, using packed tables (one big number per
-table) and Lean's built-in arithmetic on natural numbers. A first attempt that recomputed every
+certificate checks in two to three minutes of processor time on a laptop, using packed tables (one
+big number per table) and Lean's built-in arithmetic on natural numbers. A first attempt that recomputed every
 state transition from the definition in each of the 49 rounds took over ten seconds a round and
 used a lot of memory; checking a transition table once and then looking transitions up made it
 about ten times faster. Five rows (1,595 states) has not been tried.
