@@ -1,9 +1,8 @@
 # The drift conjecture for A352676: proof
 
-Status (21 November 2026): every step except one is verified in Lean. The exception is step C2,
-a classical fact about Sturmian words that is cited from the literature; Lean takes it as an
-explicit hypothesis (`BlockHypothesis`) and checks it for the first four cases. The argument has
-not yet been read by another person.
+Status (21 November 2026): the theorem is verified in Lean with no assumptions
+(`drift_theorem_zero`, `drift_theorem_above`, `drift_theorem_below` in
+`lean/BeattyGaps/Sqrt3Block.lean`). The write-up below has not yet been read by another person.
 
 ## Statement
 
@@ -84,26 +83,27 @@ and d is unbounded above and below.
 
 ## What has been checked, and how
 
-Lean names are in `lean/BeattyGaps/Sqrt3Drift.lean` (namespace `BeattyGaps.Sqrt3`).
+Lean names are in `lean/BeattyGaps/Sqrt3Drift.lean` and `lean/BeattyGaps/Sqrt3Block.lean`
+(namespace `BeattyGaps.Sqrt3`).
 
 | Part | Check |
 |---|---|
 | Step A (walk step) | Lean: `walk_step` and `next_elem` (the walk moves by exactly +1 or -1 from one element to the next) |
 | Step B (walk to drift) | Lean: `drift_of_F` and `drift_eq_zero_iff`. Lean proves the sign statements and that the drift is at least as large as the walk in absolute value, not the exact floor formula |
 | C1 (membership rule, walk as a sum) | Lean: `inS_iff`, `F_succ`, `F_eq_Phi` |
-| C2 (block structure of the step word) | **Not proved in Lean.** Cited theorem, stated as the hypothesis `BlockHypothesis`. Lean checks it for the first four standard words (`block_small`); block sums agree with brute force for all q_n up to 600,000 |
+| C2 (block structure of the step word) | Lean: `block_hypothesis`. Mathlib has no Sturmian word theory, so this is proved from scratch for sqrt 3: the convergents p_k/q_k have norms p_k^2 - 3 q_k^2 in {1, -2} and determinant +1 or -1 (`norm_qp`, `det_qp`), so \|m sqrt 3 - N\| >= \|q_k sqrt 3 - p_k\| for 1 <= m < q_{k+1} (`best_approx_even`, `best_approx_odd`), so floor((m + q_k) sqrt 3) = floor(m sqrt 3) + p_k on that range (`w_shift`) |
 | C3 (closed forms) | Lean: `good_all`; consequences `F_block_one`, `F_block_three` |
 | Step D (a unit-step walk that changes sign hits zero) | Lean: `zero_between` |
-| Whole theorem | Lean, assuming `BlockHypothesis`: `d_zero_infinitely_often`, `d_unbounded_above`, `d_unbounded_below`, stated for the n-th element `a n` and `d n = a n - floor(n (3/2)(1 + sqrt 3))` |
+| Whole theorem | Lean, no assumptions: `drift_theorem_zero`, `drift_theorem_above`, `drift_theorem_below`, stated for the n-th element `a n` and `d n = a n - floor(n (3/2)(1 + sqrt 3))` |
 | Independent numerical check | `drift_sqrt3.c`: exact drift for the first 2,000,000,000 integers; records at a = 10865, 151317, ... = q_n + 1 and a = 40543, 564717, ... = q_n - 2, drift between -22 and 21, 12.9% of n have d(n) = 0 |
 
 All of these Lean theorems depend only on the three standard axioms.
 
 ## Not done
 
-* `BlockHypothesis` (step C2) is not proved in Lean. Mathlib has no theory of Sturmian words; a
-  proof for this particular slope would have to be built from the continued fraction of sqrt 3.
 * The exact formula of the sharper form (first bullet) and the constants in its last bullet are
   proved on paper only; Lean proves slightly weaker statements that suffice for the theorem.
+* The Lean statement is for the reading of the conjecture given above (A352674 in place of
+  A352673). Lean cannot check that this is what the OEIS entry intends.
 * No analogue has been attempted for the other pairs. For sqrt 2 with sqrt 3 and for the cube
   roots of 2 the same question lives on a two-dimensional torus and looks much harder.

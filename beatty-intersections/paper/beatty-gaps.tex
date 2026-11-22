@@ -36,8 +36,8 @@ three, this settles the three conjectures in the corresponding entry: the gap se
 conjectured one, the growth rate is as conjectured, and the sequence returns to its linear trend
 infinitely often while deviating from it without bound in both directions. The last statement
 follows from a description of the deviation as a walk with unit steps driven by the gap
-sequence. The gap sets are formally verified in the Lean proof assistant, and so is the last
-statement, conditionally on one classical fact about Sturmian words.
+sequence. The gap sets and the last statement are formally verified in the Lean proof
+assistant.
 \end{abstract}
 
 \section{Introduction}
@@ -158,9 +158,8 @@ elements differ by $2$ or $3$, and $\fl{(k+2)\beta}-\fl{k\beta}>2\beta-1>4$. The
 
 The gap sets in Theorem~\ref{thm:gaps} (that the gaps are exactly those listed, and that each
 occurs at least once) are formally verified in Lean~4 \cite{lean4} with Mathlib \cite{mathlib}.
-So is Theorem~\ref{thm:a352676}(iii), under one explicitly stated hypothesis: the classical fact
-about standard words quoted in Section~\ref{sec:drift}. The frequencies are proved here in the
-usual way and are not formalized.
+So is Theorem~\ref{thm:a352676}(iii). The frequencies are proved here in the usual way and are
+not formalized.
 Section~\ref{sec:lean} says precisely what is and is not machine-checked. The Lean sources and
 the programs that produced the case analyses are available at
 \url{https://github.com/clink-bw/math-proofs}.
@@ -661,17 +660,23 @@ $F(M)=\Phi_{c(1)\cdots c(M)}(4)$.
 \item \texttt{drift\_of\_F} and \texttt{drift\_eq\_zero\_iff}: at an element of the intersection,
 $d=0$ if and only if $F=0$; if $F\ge1$ then $d\le-F$; if $F\le-1$ then $d\ge-F$. This is the part
 of Theorem~\ref{thm:walk}(a) needed below; the exact floor formula is not formalized.
-\item The theorems \texttt{d\_zero\_infinitely\_often}, \texttt{d\_unbounded\_above}
-and\\ \texttt{d\_unbounded\_below}: Theorem~\ref{thm:a352676}(iii), for $a(n)$ defined as the $n$-th
-element and $d(n)=a(n)-\fl{(3/2)(1+\sqrt3)\,n}$, \emph{assuming} the hypothesis
-\texttt{BlockHypothesis}.
+\item \texttt{block\_hypothesis}: the fact about standard words quoted in
+Section~\ref{sec:drift}, namely that for every $k\ge1$ the first $q_k$ letters of
+$c(1)c(2)\cdots$ form the word $s_k$.
+\item The theorems \texttt{drift\_theorem\_zero}, \texttt{drift\_theorem\_above}
+and\\ \texttt{drift\_theorem\_below}: Theorem~\ref{thm:a352676}(iii), for $a(n)$ defined as the $n$-th
+element and $d(n)=a(n)-\fl{(3/2)(1+\sqrt3)\,n}$, with no hypotheses.
 \end{itemize}
 
-The hypothesis \texttt{BlockHypothesis} is the statement, quoted in Section~\ref{sec:drift} from
-the theory of standard words, that for every $k\ge1$ the first $q_k$ letters of
-$c(1)c(2)\cdots$ form the word $s_k$. It is not proved in Lean; Mathlib has no theory of
-Sturmian words. Lean does verify it for $k\le4$ (\texttt{block\_small}), which guards against an
-error in the formal definitions.
+\begin{sloppypar}
+Mathlib has no theory of Sturmian words, so \texttt{block\_hypothesis} is proved directly for
+this slope, by the classical argument. Let $p_k/q_k$ be the convergents
+$1/1$, $2/1$, $5/3$, $7/4$, $19/11$, $26/15$, \dots\ of $\sqrt3$. Then $p_k^2-3q_k^2$ is $-2$ for even $k$ and $1$ for odd $k$,
+and consecutive convergents have determinant $\pm1$. It follows that
+$|m\sqrt3-N|\ge|q_k\sqrt3-p_k|$ for all integers $N$ and $1\le m<q_{k+1}$, hence that
+$\fl{(m+q_k)\sqrt3}=\fl{m\sqrt3}+p_k$ on that range, so the word $c$ repeats itself after a shift
+by $q_k$ for as long as the recursion defining $s_{k+1}$ requires.
+\end{sloppypar}
 
 The proofs of the gap sets follow Sections~\ref{sec:prelim}--\ref{sec:indep}. A program computes
 the cells and, for each cell, a certificate: the gap $g$, the integers witnessing that $m+g$ lies
@@ -684,8 +689,8 @@ Section~\ref{sec:drift} is written by hand and follows the text. All proofs use 
 the three standard ones of Lean's classical logic.
 
 Not formalized: the frequencies in Theorem~\ref{thm:gaps} and the statement that each gap occurs
-infinitely often (Lean shows that each occurs at least once); Theorem~\ref{thm:a352676}(ii); the
-hypothesis \texttt{BlockHypothesis}; and the precise constants in Theorem~\ref{thm:walk}. As an
+infinitely often (Lean shows that each occurs at least once); Theorem~\ref{thm:a352676}(ii);
+and the exact formula and constants in Theorem~\ref{thm:walk}. As an
 independent check, $d(n)$ was computed exactly for all elements up to $2\cdot10^9$, where it
 ranges from $-22$ to $21$, and the block sums of Proposition~\ref{prop:blocks} agree with
 brute-force computation for all $q_k\le 600000$.
