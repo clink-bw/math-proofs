@@ -300,7 +300,26 @@ def check_nearmiss():
         ok(f"near-miss example on {name}: {bad} of {comb(n, 4)} 4-sets beaten by nobody = {n} x {c} classes (agree)")
 
 
+def verify_file(path):
+    """A tournament given as n rows of 0/1 (row x, column y is 1 when x beats y)."""
+    rows = [line.strip() for line in open(path) if line.strip()]
+    n = len(rows)
+    if any(len(r) != n or set(r) - {"0", "1"} for r in rows):
+        fail(f"{path}: not an n x n 0/1 matrix")
+    bb = masks_from(n, lambda x, y: rows[x][y] == "1")   # also checks it is a tournament
+    for k in range(1, 6):
+        bad = undominated(bb, k)
+        print(f"{path}: {n} players, k={k}: {bad} of {comb(n, k)} {k}-sets beaten by nobody"
+              + ("  -> k-paradoxical" if bad == 0 else ""))
+        if bad:
+            break
+
+
 if __name__ == "__main__":
+    if sys.argv[1:2] == ["verify"]:
+        for path in sys.argv[2:]:
+            verify_file(path)
+        sys.exit(0)
     which = sys.argv[1:] or ["paley", "circ", "groups", "hits", "nearmiss"]
     if "paley" in which:
         check_paley()

@@ -139,6 +139,40 @@ as n grows, from 46 to 116 kinds at 47 to 49 players to 30 to 43 at 63 to 65, an
 with the Paley tournament. On 47 players the best circulant is the Paley tournament on 47, and on
 59 players the Paley tournament ties for best.
 
+## A heuristic attempt at 66 players (not exhaustive, nothing found)
+
+After the exhaustive search, one cheap long shot was tried: look for a 4-paradoxical
+tournament on 66 players, which would show f(4) ≤ 66, starting from the Paley tournament on 67
+with one player deleted.
+
+**The starting point (exact computation, C and Python agree).** In the Paley tournament on 67,
+22,110 of the 766,480 4-sets are beaten by exactly one player. Deleting a player therefore
+leaves exactly 22,110 / 67 = 330 of the 720,720 4-sets beaten by nobody, whichever player is
+deleted. That is far closer than any Cayley tournament (the best on 65 players leaves 2,470).
+
+**What the search did** ([compute/local_search.c](compute/local_search.c)). It reverses the
+result of one game at a time and keeps an exact running count of unbeaten 4-sets (checked
+against a fresh recount at the end of every run).
+
+* Every one of the 2,145 possible single reversals from the start makes things worse, by 29
+  to 53 unbeaten 4-sets. Paley-minus-one is a deep local minimum.
+* Repairing one unbeaten 4-set per step (a tabu search) drifted up to about 1,200 within
+  30 seconds.
+* Simulated annealing (uphill moves accepted with a probability that falls as the
+  "temperature" drops) has a sharp threshold: at temperature 5 or below the search never
+  leaves the start; at 6 to 7 it wanders nearby (about 360 to 420 unbeaten); at 8 or above it
+  "melts" into disordered tournaments with about 4,000 unbeaten.
+* One batch of 8 independent annealing runs, 20 minutes each (about 5.4 × 10^8 proposed
+  reversals in all; [compute/run_local_search.sh](compute/run_local_search.sh), log
+  [results/local_search_66.txt](compute/results/local_search_66.txt)). The six runs started
+  just below the threshold all slid back to the starting 330 as they cooled and never went
+  below it. The two that melted first re-cooled only to about 1,750.
+
+**Outcome.** Nothing below 330 was found. This is a heuristic search, so it proves nothing
+about whether a 4-paradoxical tournament on 66 players exists. It only shows that the obvious
+route (small edits to Paley-minus-one) does not lead to one. It was run once, as the single
+batch above, and not pursued further.
+
 ## How the code was checked
 
 All checks pass. [compute/check.py](compute/check.py) shares no code with the search and tests
@@ -189,7 +223,11 @@ checked inside Lean; that is not practical, so the negative result stays an exac
 
 * [compute/search.c](compute/search.c) - the search (C, POSIX threads, 128-bit bitsets). The
   comment at the top explains the method; `./search` with no arguments prints usage pointers.
-* [compute/check.py](compute/check.py) - the independent checker.
+* [compute/check.py](compute/check.py) - the independent checker; `python3 check.py verify FILE`
+  checks a tournament given as rows of 0/1.
+* [compute/local_search.c](compute/local_search.c) and
+  [compute/run_local_search.sh](compute/run_local_search.sh) - the heuristic attempt at 66
+  players (about 20 minutes).
 * [compute/run_all.sh](compute/run_all.sh) - reruns every search above (about six minutes);
   [compute/run_nearmiss.sh](compute/run_nearmiss.sh) - the near-miss runs.
 * [compute/results/](compute/results/) - the logs quoted in this README.

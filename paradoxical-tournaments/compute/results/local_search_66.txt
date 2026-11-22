@@ -1,0 +1,171 @@
+# 8 simulated-annealing runs, 1200 s each, from Paley 67 minus one player (330 unbeaten 4-sets)
+start: Paley 67 minus one player, 330 unbeaten 4-sets of 720720
+single flips from the start: best change +29; changes: +29:33 +31:33 +32:99 +33:99 +34:198 +35:132 +36:165 +37:132 +38:165 +39:66 +42:66 +43:66 +44:99 +45:66 +46:99 +47:165 +48:33 +49:165 +50:132 +51:33 +53:99
+start: Paley 67 minus one player, 330 unbeaten 4-sets of 720720
+t=60s steps=4503552 T=6.781 unbeaten=362 best=330 accepted=56569
+t=120s steps=8900608 T=6.131 unbeaten=401 best=330 accepted=87418
+t=180s steps=12260352 T=5.543 unbeaten=330 best=330 accepted=100462
+t=240s steps=15886336 T=5.012 unbeaten=330 best=330 accepted=107776
+t=300s steps=19055616 T=4.531 unbeaten=330 best=330 accepted=110880
+t=360s steps=22367232 T=4.097 unbeaten=330 best=330 accepted=112416
+t=420s steps=25288704 T=3.704 unbeaten=330 best=330 accepted=113054
+t=480s steps=28223488 T=3.349 unbeaten=330 best=330 accepted=113316
+t=540s steps=31111168 T=3.028 unbeaten=330 best=330 accepted=113400
+t=600s steps=34278400 T=2.738 unbeaten=330 best=330 accepted=113418
+t=660s steps=37692416 T=2.475 unbeaten=330 best=330 accepted=113428
+t=720s steps=41086976 T=2.238 unbeaten=330 best=330 accepted=113428
+t=780s steps=43743232 T=2.024 unbeaten=330 best=330 accepted=113428
+t=840s steps=47148032 T=1.830 unbeaten=330 best=330 accepted=113428
+t=900s steps=50601984 T=1.654 unbeaten=330 best=330 accepted=113428
+t=960s steps=54374400 T=1.496 unbeaten=330 best=330 accepted=113428
+t=1020s steps=58395648 T=1.352 unbeaten=330 best=330 accepted=113428
+t=1080s steps=62235648 T=1.223 unbeaten=330 best=330 accepted=113428
+t=1140s steps=65945600 T=1.106 unbeaten=330 best=330 accepted=113428
+FINAL anneal seed=11 T0=7.500 T1=1.000 steps=69663744 seconds=1200 best=330 current=330
+start: Paley 67 minus one player, 330 unbeaten 4-sets of 720720
+t=60s steps=4505600 T=6.781 unbeaten=422 best=330 accepted=56527
+t=120s steps=8890368 T=6.131 unbeaten=368 best=330 accepted=87127
+t=180s steps=12277760 T=5.543 unbeaten=330 best=330 accepted=100098
+t=240s steps=15916032 T=5.012 unbeaten=330 best=330 accepted=107686
+t=300s steps=19131392 T=4.532 unbeaten=330 best=330 accepted=110798
+t=360s steps=22458368 T=4.097 unbeaten=330 best=330 accepted=112264
+t=420s steps=25413632 T=3.705 unbeaten=330 best=330 accepted=112956
+t=480s steps=28339200 T=3.349 unbeaten=330 best=330 accepted=113218
+t=540s steps=31240192 T=3.028 unbeaten=330 best=330 accepted=113302
+t=600s steps=34411520 T=2.738 unbeaten=330 best=330 accepted=113344
+t=660s steps=37804032 T=2.476 unbeaten=330 best=330 accepted=113358
+t=720s steps=41184256 T=2.238 unbeaten=330 best=330 accepted=113358
+t=780s steps=43830272 T=2.024 unbeaten=330 best=330 accepted=113358
+t=840s steps=47213568 T=1.830 unbeaten=330 best=330 accepted=113358
+t=900s steps=50708480 T=1.654 unbeaten=330 best=330 accepted=113358
+t=960s steps=54477824 T=1.496 unbeaten=330 best=330 accepted=113358
+t=1020s steps=58487808 T=1.352 unbeaten=330 best=330 accepted=113358
+t=1080s steps=62271488 T=1.223 unbeaten=330 best=330 accepted=113358
+t=1140s steps=65993728 T=1.106 unbeaten=330 best=330 accepted=113358
+FINAL anneal seed=12 T0=7.500 T1=1.000 steps=69698560 seconds=1200 best=330 current=330
+start: Paley 67 minus one player, 330 unbeaten 4-sets of 720720
+t=60s steps=4445184 T=6.781 unbeaten=395 best=330 accepted=55970
+t=120s steps=8869888 T=6.131 unbeaten=362 best=330 accepted=87229
+t=180s steps=12185600 T=5.543 unbeaten=362 best=330 accepted=99747
+t=240s steps=15799296 T=5.012 unbeaten=330 best=330 accepted=107062
+t=300s steps=18948096 T=4.532 unbeaten=330 best=330 accepted=110310
+t=360s steps=22252544 T=4.097 unbeaten=330 best=330 accepted=111886
+t=420s steps=25180160 T=3.705 unbeaten=330 best=330 accepted=112454
+t=480s steps=28116992 T=3.350 unbeaten=330 best=330 accepted=112706
+t=540s steps=31025152 T=3.028 unbeaten=330 best=330 accepted=112802
+t=600s steps=34182144 T=2.738 unbeaten=330 best=330 accepted=112826
+t=660s steps=37564416 T=2.476 unbeaten=330 best=330 accepted=112836
+t=720s steps=40922112 T=2.238 unbeaten=330 best=330 accepted=112842
+t=780s steps=43540480 T=2.024 unbeaten=330 best=330 accepted=112842
+t=840s steps=46920704 T=1.830 unbeaten=330 best=330 accepted=112842
+t=900s steps=50350080 T=1.654 unbeaten=330 best=330 accepted=112842
+t=960s steps=54111232 T=1.496 unbeaten=330 best=330 accepted=112842
+t=1020s steps=58124288 T=1.353 unbeaten=330 best=330 accepted=112842
+t=1080s steps=61917184 T=1.223 unbeaten=330 best=330 accepted=112842
+t=1140s steps=65725440 T=1.106 unbeaten=330 best=330 accepted=112842
+FINAL anneal seed=13 T0=7.500 T1=1.000 steps=69472256 seconds=1200 best=330 current=330
+start: Paley 67 minus one player, 330 unbeaten 4-sets of 720720
+t=60s steps=4548608 T=6.575 unbeaten=418 best=330 accepted=42695
+t=120s steps=8969216 T=6.176 unbeaten=330 best=330 accepted=71718
+t=180s steps=12261376 T=5.801 unbeaten=367 best=330 accepted=86631
+t=240s steps=15910912 T=5.448 unbeaten=330 best=330 accepted=97688
+t=300s steps=19073024 T=5.118 unbeaten=330 best=330 accepted=103912
+t=360s steps=22420480 T=4.807 unbeaten=399 best=330 accepted=108172
+t=420s steps=25318400 T=4.515 unbeaten=362 best=330 accepted=110695
+t=480s steps=28272640 T=4.241 unbeaten=330 best=330 accepted=112338
+t=540s steps=31188992 T=3.983 unbeaten=330 best=330 accepted=113270
+t=600s steps=34342912 T=3.741 unbeaten=330 best=330 accepted=113810
+t=660s steps=37710848 T=3.514 unbeaten=330 best=330 accepted=114152
+t=720s steps=41094144 T=3.301 unbeaten=330 best=330 accepted=114308
+t=780s steps=43762688 T=3.100 unbeaten=330 best=330 accepted=114386
+t=840s steps=47168512 T=2.912 unbeaten=330 best=330 accepted=114446
+t=900s steps=50612224 T=2.735 unbeaten=330 best=330 accepted=114468
+t=960s steps=54379520 T=2.569 unbeaten=330 best=330 accepted=114492
+t=1020s steps=58390528 T=2.413 unbeaten=330 best=330 accepted=114498
+t=1080s steps=62209024 T=2.266 unbeaten=330 best=330 accepted=114502
+t=1140s steps=65950720 T=2.129 unbeaten=330 best=330 accepted=114506
+FINAL anneal seed=14 T0=7.000 T1=2.000 steps=69694464 seconds=1200 best=330 current=330
+start: Paley 67 minus one player, 330 unbeaten 4-sets of 720720
+t=60s steps=4520960 T=6.575 unbeaten=363 best=330 accepted=42471
+t=120s steps=8862720 T=6.176 unbeaten=366 best=330 accepted=70959
+t=180s steps=12205056 T=5.801 unbeaten=330 best=330 accepted=86004
+t=240s steps=15803392 T=5.448 unbeaten=330 best=330 accepted=97132
+t=300s steps=19032064 T=5.118 unbeaten=330 best=330 accepted=103752
+t=360s steps=22296576 T=4.807 unbeaten=330 best=330 accepted=108056
+t=420s steps=25158656 T=4.515 unbeaten=330 best=330 accepted=110726
+t=480s steps=28109824 T=4.241 unbeaten=330 best=330 accepted=112258
+t=540s steps=30986240 T=3.983 unbeaten=330 best=330 accepted=113268
+t=600s steps=34155520 T=3.741 unbeaten=330 best=330 accepted=113836
+t=660s steps=37522432 T=3.514 unbeaten=330 best=330 accepted=114228
+t=720s steps=40916992 T=3.301 unbeaten=330 best=330 accepted=114444
+t=780s steps=43578368 T=3.100 unbeaten=330 best=330 accepted=114528
+t=840s steps=46963712 T=2.912 unbeaten=330 best=330 accepted=114592
+t=900s steps=50438144 T=2.735 unbeaten=330 best=330 accepted=114622
+t=960s steps=54228992 T=2.569 unbeaten=330 best=330 accepted=114638
+t=1020s steps=58222592 T=2.413 unbeaten=330 best=330 accepted=114648
+t=1080s steps=62031872 T=2.266 unbeaten=330 best=330 accepted=114650
+t=1140s steps=65730560 T=2.129 unbeaten=330 best=330 accepted=114650
+FINAL anneal seed=15 T0=7.000 T1=2.000 steps=69514240 seconds=1200 best=330 current=330
+start: Paley 67 minus one player, 330 unbeaten 4-sets of 720720
+t=60s steps=4516864 T=6.128 unbeaten=399 best=330 accepted=27882
+t=120s steps=8847360 T=5.777 unbeaten=330 best=330 accepted=46558
+t=180s steps=12253184 T=5.447 unbeaten=362 best=330 accepted=56801
+t=240s steps=15886336 T=5.135 unbeaten=330 best=330 accepted=64278
+t=300s steps=19043328 T=4.841 unbeaten=366 best=330 accepted=68609
+t=360s steps=22316032 T=4.564 unbeaten=330 best=330 accepted=71468
+t=420s steps=25221120 T=4.303 unbeaten=330 best=330 accepted=73046
+t=480s steps=28152832 T=4.056 unbeaten=330 best=330 accepted=73998
+t=540s steps=31051776 T=3.824 unbeaten=330 best=330 accepted=74650
+t=600s steps=34222080 T=3.605 unbeaten=330 best=330 accepted=75072
+t=660s steps=37598208 T=3.399 unbeaten=330 best=330 accepted=75312
+t=720s steps=40976384 T=3.204 unbeaten=330 best=330 accepted=75472
+t=780s steps=43608064 T=3.021 unbeaten=330 best=330 accepted=75516
+t=840s steps=47001600 T=2.848 unbeaten=330 best=330 accepted=75560
+t=900s steps=50461696 T=2.685 unbeaten=330 best=330 accepted=75590
+t=960s steps=54225920 T=2.531 unbeaten=330 best=330 accepted=75606
+t=1020s steps=58212352 T=2.386 unbeaten=330 best=330 accepted=75612
+t=1080s steps=62041088 T=2.250 unbeaten=330 best=330 accepted=75614
+t=1140s steps=65760256 T=2.121 unbeaten=330 best=330 accepted=75620
+FINAL anneal seed=16 T0=6.500 T1=2.000 steps=69512192 seconds=1200 best=330 current=330
+start: Paley 67 minus one player, 330 unbeaten 4-sets of 720720
+t=60s steps=3482624 T=8.063 unbeaten=3898 best=330 accepted=712376
+t=120s steps=6949888 T=7.224 unbeaten=3564 best=330 accepted=1321641
+t=180s steps=9598976 T=6.473 unbeaten=3353 best=330 accepted=1717634
+t=240s steps=12546048 T=5.799 unbeaten=3087 best=330 accepted=2088327
+t=300s steps=15183872 T=5.196 unbeaten=3113 best=330 accepted=2359651
+t=360s steps=17960960 T=4.655 unbeaten=2861 best=330 accepted=2588051
+t=420s steps=20489216 T=4.171 unbeaten=2572 best=330 accepted=2753560
+t=480s steps=23128064 T=3.737 unbeaten=2638 best=330 accepted=2883571
+t=540s steps=25798656 T=3.348 unbeaten=2372 best=330 accepted=2981512
+t=600s steps=28765184 T=2.999 unbeaten=2272 best=330 accepted=3059931
+t=660s steps=31996928 T=2.687 unbeaten=1982 best=330 accepted=3119603
+t=720s steps=35287040 T=2.408 unbeaten=1870 best=330 accepted=3158712
+t=780s steps=37876736 T=2.157 unbeaten=1818 best=330 accepted=3180347
+t=840s steps=41240576 T=1.933 unbeaten=1755 best=330 accepted=3201563
+t=900s steps=44636160 T=1.731 unbeaten=1751 best=330 accepted=3218129
+t=960s steps=48361472 T=1.551 unbeaten=1770 best=330 accepted=3231754
+t=1020s steps=52327424 T=1.390 unbeaten=1745 best=330 accepted=3243728
+t=1080s steps=56137728 T=1.245 unbeaten=1749 best=330 accepted=3253314
+t=1140s steps=59857920 T=1.116 unbeaten=1746 best=330 accepted=3261231
+FINAL anneal seed=17 T0=9.000 T1=1.000 steps=63541248 seconds=1200 best=330 current=1752
+start: Paley 67 minus one player, 330 unbeaten 4-sets of 720720
+t=60s steps=3154944 T=10.598 unbeaten=4357 best=330 accepted=893153
+t=120s steps=6350848 T=9.359 unbeaten=4258 best=330 accepted=1681642
+t=180s steps=8819712 T=8.266 unbeaten=4130 best=330 accepted=2207804
+t=240s steps=11572224 T=7.300 unbeaten=4145 best=330 accepted=2706332
+t=300s steps=14036992 T=6.447 unbeaten=3395 best=330 accepted=3076186
+t=360s steps=16693248 T=5.694 unbeaten=3321 best=330 accepted=3400050
+t=420s steps=19127296 T=5.028 unbeaten=3146 best=330 accepted=3640218
+t=480s steps=21672960 T=4.441 unbeaten=2806 best=330 accepted=3831970
+t=540s steps=24259584 T=3.922 unbeaten=2760 best=330 accepted=3979317
+t=600s steps=27156480 T=3.463 unbeaten=2426 best=330 accepted=4098113
+t=660s steps=30340096 T=3.059 unbeaten=2258 best=330 accepted=4191882
+t=720s steps=33555456 T=2.701 unbeaten=2077 best=330 accepted=4254084
+t=780s steps=36100096 T=2.386 unbeaten=1858 best=330 accepted=4287119
+t=840s steps=39461888 T=2.107 unbeaten=1784 best=330 accepted=4311184
+t=900s steps=42895360 T=1.861 unbeaten=1794 best=330 accepted=4329459
+t=960s steps=46708736 T=1.643 unbeaten=1798 best=330 accepted=4345222
+t=1020s steps=50716672 T=1.451 unbeaten=1788 best=330 accepted=4358908
+t=1080s steps=54528000 T=1.282 unbeaten=1786 best=330 accepted=4369878
+t=1140s steps=58254336 T=1.132 unbeaten=1791 best=330 accepted=4378791
+FINAL anneal seed=18 T0=12.000 T1=1.000 steps=61992960 seconds=1200 best=330 current=1782

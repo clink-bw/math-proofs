@@ -1,2 +1,3 @@
-# compiled search program (built by run_all.sh)
+# compiled programs (built by the run scripts)
 /search
+/local_search
