@@ -73,13 +73,14 @@ theorem small_ok :
     ((List.range' 1 0).all fun n => finOK cert.fins (cert.tab n) (gamma n)) = true := by
   decide +kernel
 
-/-- `words[n]`, for `1 ≤ n < 1`: a list of `n` columns of weight `gamma n` that the automaton
+/-- `words[n]`, for `1 ≤ n < 2`: a list of `n` columns of weight `gamma n` that the automaton
 accepts.  A column is a base-3 number; digit `i` is the weight in row `i`. -/
 def words : List (List ℕ) := [
-    []]
+    [],
+    [6]]
 
 theorem words_ok :
-    ((List.range' 1 0).all fun n => acceptOK 3 (words.getD n []) n (gamma n)) = true := by
+    ((List.range' 1 1).all fun n => acceptOK 3 (words.getD n []) n (gamma n)) = true := by
   decide +kernel
 
 /-- A block of `2` columns of weight `3` that can be repeated any number of times. -/
@@ -104,7 +105,7 @@ theorem pump_ok :
     ((List.range 2).all fun r =>
       pumpOK 3 (baseA.getD r []) cyc (baseB.getD r []) (baseL.getD r 0) 2
         ((3 * baseL.getD r 0 + 1 + 1) / 2) 3 &&
-      Nat.beq (baseL.getD r 0 % 2) r && Nat.ble (baseL.getD r 0) 3) = true := by
+      Nat.beq (baseL.getD r 0 % 2) r && Nat.blt (baseL.getD r 0) (2 + 2)) = true := by
   decide +kernel
 
 end GridDomination.Height3

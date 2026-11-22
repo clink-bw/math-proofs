@@ -1,6 +1,7 @@
 import Mathlib.Combinatorics.SimpleGraph.Prod
 import Mathlib.Combinatorics.SimpleGraph.Hasse
 import Mathlib.Algebra.BigOperators.Fin
+import Mathlib.Data.List.GetD
 import Mathlib.Tactic
 
 /-!
@@ -64,7 +65,7 @@ theorem zext_apply {m n : ℕ} (f : Fin m × Fin n → ℕ) (i : Fin m) (j : Fin
   have hi := i.isLt
   have hj := j.isLt
   simp only [zext]
-  rw [dif_pos (by omega)]
+  rw [dite_eq_left (by omega)]
   rfl
 
 /-- In a path, the weights on the neighbours of `v` are the two entries either side of it. -/
@@ -86,37 +87,48 @@ theorem sum_neighbor_path {n : ℕ} (h : Fin n → ℕ) (v : Fin n) :
   rw [key]
   congr 1
   · by_cases h0 : 1 ≤ v.val
-    · rw [Finset.sum_eq_single (⟨v.val - 1, by omega⟩ : Fin n)]
-      · simp only [zext1]
-        rw [if_pos (by simp; omega), dif_pos (by omega)]
-      · intro u _ hu
-        rw [if_neg]
-        intro hh
-        exact hu (Fin.ext (by simp; omega))
-      · intro hh
-        exact absurd (Finset.mem_univ _) hh
-    · rw [Finset.sum_eq_zero]
-      · simp only [zext1]
-        rw [dif_neg (by omega)]
-      · intro u _
-        rw [if_neg (by omega)]
+    · have e : (∑ u : Fin n, if u.val + 1 = v.val then h u else 0)
+          = h ⟨v.val - 1, by omega⟩ := by
+        rw [Finset.sum_eq_single (⟨v.val - 1, by omega⟩ : Fin n)]
+        · exact ite_eq_left (show v.val - 1 + 1 = v.val by omega)
+        · intro u _ hu
+          apply ite_eq_right
+          intro hh
+          exact hu (Fin.ext (show u.val = v.val - 1 by omega))
+        · intro hh
+          exact absurd (Finset.mem_univ _) hh
+      rw [e]
+      unfold zext1
+      rw [dite_eq_left (show 1 ≤ v.val ∧ v.val ≤ n by omega)]
+    · have e : (∑ u : Fin n, if u.val + 1 = v.val then h u else 0) = 0 := by
+        apply Finset.sum_eq_zero
+        intro u _
+        exact ite_eq_right (by omega)
+      rw [e]
+      unfold zext1
+      rw [dite_eq_right (show ¬(1 ≤ v.val ∧ v.val ≤ n) by omega)]
   · by_cases h0 : v.val + 1 < n
-    · rw [Finset.sum_eq_single (⟨v.val + 1, h0⟩ : Fin n)]
-      · simp only [zext1]
-        rw [if_pos (by simp), dif_pos (by omega)]
-        rfl
-      · intro u _ hu
-        rw [if_neg]
-        intro hh
-        exact hu (Fin.ext (by simp; omega))
-      · intro hh
-        exact absurd (Finset.mem_univ _) hh
-    · rw [Finset.sum_eq_zero]
-      · simp only [zext1]
-        rw [dif_neg (by omega)]
-      · intro u _
+    · have e : (∑ u : Fin n, if v.val + 1 = u.val then h u else 0)
+          = h ⟨v.val + 2 - 1, by omega⟩ := by
+        rw [Finset.sum_eq_single (⟨v.val + 2 - 1, by omega⟩ : Fin n)]
+        · exact ite_eq_left (show v.val + 1 = v.val + 2 - 1 by omega)
+        · intro u _ hu
+          apply ite_eq_right
+          intro hh
+          exact hu (Fin.ext (show u.val = v.val + 2 - 1 by omega))
+        · intro hh
+          exact absurd (Finset.mem_univ _) hh
+      rw [e]
+      unfold zext1
+      rw [dite_eq_left (show 1 ≤ v.val + 2 ∧ v.val + 2 ≤ n by omega)]
+    · have e : (∑ u : Fin n, if v.val + 1 = u.val then h u else 0) = 0 := by
+        apply Finset.sum_eq_zero
+        intro u _
         have := u.isLt
-        rw [if_neg (by omega)]
+        exact ite_eq_right (by omega)
+      rw [e]
+      unfold zext1
+      rw [dite_eq_right (show ¬(1 ≤ v.val + 2 ∧ v.val + 2 ≤ n) by omega)]
 
 /-- The weight seen by the vertex in row `i`, column `j` of the grid: itself, the vertices above
 and below, and the vertices to the left and right, where anything outside the grid counts 0. -/
@@ -134,16 +146,16 @@ theorem nbhd_sum_grid {m n : ℕ} (f : Fin m × Fin n → ℕ) (i : Fin m) (j : 
     intro a
     simp only [zext, zext1]
     by_cases ha : 1 ≤ a ∧ a ≤ m
-    · rw [dif_pos ⟨ha, by omega⟩, dif_pos ha]
+    · rw [dite_eq_left ⟨ha, by omega⟩, dite_eq_left ha]
       rfl
-    · rw [dif_neg (fun hh => ha hh.1), dif_neg ha]
+    · rw [dite_eq_right (fun hh => ha hh.1), dite_eq_right ha]
   have e2 : ∀ b, zext f (i.val + 1) b = zext1 (fun b => f (i, b)) b := by
     intro b
     simp only [zext, zext1]
     by_cases hb : 1 ≤ b ∧ b ≤ n
-    · rw [dif_pos ⟨by omega, hb⟩, dif_pos hb]
+    · rw [dite_eq_left ⟨by omega, hb⟩, dite_eq_left hb]
       rfl
-    · rw [dif_neg (fun hh => hb hh.2), dif_neg hb]
+    · rw [dite_eq_right (fun hh => hb hh.2), dite_eq_right hb]
   rw [e1, e1, e2, e2]
   ring
 

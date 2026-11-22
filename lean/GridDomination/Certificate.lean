@@ -41,8 +41,7 @@ theorem wf_zero (m : ℕ) : wf m 0 0 = true := by
   unfold wf
   rw [List.all_eq_true]
   intro i _
-  rw [dg_zero]
-  rfl
+  rw [dg_zero] <;> rfl
 
 /-! ### Unpacking the checks -/
 
@@ -57,7 +56,8 @@ theorem transOK_spec {m offs N TR : ℕ} {fins : List ℕ} (h : transOK m offs N
   have h3 := bimp h2 hw
   obtain ⟨h4, h5⟩ := and_true_split h3
   obtain ⟨h6, h7⟩ := and_true_split h4
-  refine ⟨Nat.le_of_ble_eq_true h6, ?_, ?_⟩
+  have h6' : idx m offs b ν < N := Nat.le_of_ble_eq_true h6
+  refine ⟨h6', ?_, ?_⟩
   · intro hg
     have h8 := bimp h7 hg
     obtain ⟨k, hk, hk2⟩ := List.any_eq_true.mp h8
@@ -125,7 +125,7 @@ theorem lower_stat (hc : c.Valid) :
     obtain ⟨hw', hrel⟩ := hc.relax hc.stat hb hν hw hd hg
     have key : fld c.F (idx c.m c.offs d (need c.m b d)) + c.R * (j + 1)
         ≤ c.K * (W0 + wt c.m d) + c.OFF := by
-      rw [Nat.mul_add c.R, Nat.mul_add c.K, Nat.mul_one]
+      rw [mul_add c.R, mul_add c.K, mul_one]
       omega
     have := ih d (need c.m b d) (j + 1) (W0 + wt c.m d) s hd (need_lt _ _ _) hw' key hrun' hfin
     have e1 : j + (d :: ds).length = j + 1 + ds.length := by
@@ -297,12 +297,16 @@ theorem run_rep {m : ℕ} {x : ℕ × ℕ} {C : List ℕ} (h : run m x C = some 
 theorem length_rep (C : List ℕ) (k : ℕ) : (rep C k).length = k * C.length := by
   induction k with
   | zero => simp [rep]
-  | succ k ih => rw [rep, List.length_append, ih, Nat.succ_mul, Nat.add_comm]
+  | succ k ih =>
+    rw [rep, List.length_append, ih]
+    ring
 
 theorem wtL_rep (m : ℕ) (C : List ℕ) (k : ℕ) : wtL m (rep C k) = k * wtL m C := by
   induction k with
   | zero => simp [rep]
-  | succ k ih => rw [rep, wtL_append, ih, Nat.succ_mul, Nat.add_comm]
+  | succ k ih =>
+    rw [rep, wtL_append, ih]
+    ring
 
 /-- A list of columns with a block that can be repeated gives `{2}`-dominating functions of the
 `m × n` grid, with values in `{0,1,2}`, for every `n = L + k * p`; the weight is `W + k * q`. -/

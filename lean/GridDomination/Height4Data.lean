@@ -463,7 +463,7 @@ theorem pump_ok :
     ((List.range 10).all fun r =>
       pumpOK 4 (baseA.getD r []) cyc (baseB.getD r []) (baseL.getD r 0) 10
         ((19 * baseL.getD r 0 + 9 + 9) / 10) 19 &&
-      Nat.beq (baseL.getD r 0 % 10) r && Nat.ble (baseL.getD r 0) 11) = true := by
+      Nat.beq (baseL.getD r 0 % 10) r && Nat.blt (baseL.getD r 0) (49 + 10)) = true := by
   decide +kernel
 
 end GridDomination.Height4

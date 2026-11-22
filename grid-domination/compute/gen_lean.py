@@ -148,9 +148,9 @@ def build(m):
             TR[k * S.ncol + d] = t + 1
     assert S.nstates + 1 < 4096
 
-    # --- optimal words for n < J
+    # --- optimal words for n < N0 (N0 is fixed below, once the repeating block is known)
     words = [[]]
-    for n in range(1, J):
+    for n in range(1, J + 6 * p):
         t = min(S.final, key=lambda k: hist[n][k])
         cols, s0 = backtrack(par, n, t)
         assert s0 == S.start and run_cols(S, S.start, cols) in fin and sum(wt(m, d) for d in cols) == gam[n]
@@ -202,9 +202,13 @@ def build(m):
         assert k in fin and run_cols(S, S.start, A) == x and run_cols(S, x, B) == k
         assert sum(wt(m, d) for d in A + B) == formula(P, L)
         bases.append((L, A, B))
-    Lmax = max(L for L, A, B in bases)
+    # N0: explicit lists are given for n < N0, the repeating block is used for n >= N0
+    missed = [n for n in range(1, 6 * p) if n < bases[n % p][0]]
+    N0 = max(J, 1 + max(missed, default=0))
+    assert all(L < N0 + p for L, A, B in bases)
+    words = words[:N0]
     return dict(m=m, P=P, S=S, J=J, gam=gam, tabs=tabs, Fs=Fs, OFF=OFF, TR=TR, words=words,
-                cyc=cyc, bases=bases, Lmax=Lmax, x=x)
+                cyc=cyc, bases=bases, N0=N0, x=x)
 
 
 # ----------------------------------------------------------------------------- pictures
@@ -335,13 +339,14 @@ def emit(D):
     w(f"    ((List.range' 1 {J - 1}).all fun n => finOK cert.fins (cert.tab n) (gamma n)) = true := by")
     w("  decide +kernel")
     w("")
-    w(f"/-- `words[n]`, for `1 ≤ n < {J}`: a list of `n` columns of weight `gamma n` that the automaton")
+    N0 = D["N0"]
+    w(f"/-- `words[n]`, for `1 ≤ n < {N0}`: a list of `n` columns of weight `gamma n` that the automaton")
     w("accepts.  A column is a base-3 number; digit `i` is the weight in row `i`. -/")
     w("def words : List (List ℕ) := [")
     w(",\n".join("    " + lean_list(c) for c in D["words"]) + "]")
     w("")
     w("theorem words_ok :")
-    w(f"    ((List.range' 1 {J - 1}).all fun n => acceptOK {m} (words.getD n []) n (gamma n)) = true := by")
+    w(f"    ((List.range' 1 {N0 - 1}).all fun n => acceptOK {m} (words.getD n []) n (gamma n)) = true := by")
     w("  decide +kernel")
     w("")
     # ---- pumping
@@ -365,7 +370,7 @@ def emit(D):
     w(f"    ((List.range {p}).all fun r =>")
     w(f"      pumpOK {m} (baseA.getD r []) cyc (baseB.getD r []) (baseL.getD r 0) {p}")
     w(f"        (({R} * baseL.getD r 0 + {C} + {K - 1}) / {K}) {q} &&")
-    w(f"      Nat.beq (baseL.getD r 0 % {p}) r && Nat.ble (baseL.getD r 0) {D['Lmax']}) = true := by")
+    w(f"      Nat.beq (baseL.getD r 0 % {p}) r && Nat.blt (baseL.getD r 0) ({N0} + {p})) = true := by")
     w("  decide +kernel")
     w("")
     w(f"end GridDomination.Height{m}")
@@ -389,7 +394,7 @@ if __name__ == "__main__":
             f.write(emit(D))
         P = D["P"]
         print(f"height {m}: {D['S'].nstates} states, J = {D['J']}, OFF = {D['OFF']}, "
-              f"repeating block at state {D['S'].states[D['x']]}, base lengths "
+              f"N0 = {D['N0']}, repeating block at state {D['S'].states[D['x']]}, base lengths "
               f"{[L for L, A, B in D['bases']]}, wrote {os.path.relpath(path)}")
         print(f"  repeating block ({P['p']} columns, weight {P['q']}):")
         print("    " + picture(m, D["cyc"]).replace("\n", "\n    "))

@@ -103,7 +103,7 @@ theorem pump_ok :
     ((List.range 2).all fun r =>
       pumpOK 2 (baseA.getD r []) cyc (baseB.getD r []) (baseL.getD r 0) 2
         ((1 * baseL.getD r 0 + 1 + 0) / 1) 2 &&
-      Nat.beq (baseL.getD r 0 % 2) r && Nat.ble (baseL.getD r 0) 2) = true := by
+      Nat.beq (baseL.getD r 0 % 2) r && Nat.blt (baseL.getD r 0) (1 + 2)) = true := by
   decide +kernel
 
 end GridDomination.Height2

@@ -38,7 +38,7 @@ theorem dg_encode (m : ℕ) (x : ℕ → ℕ) (hx : ∀ i, x i ≤ 2) {i : ℕ} 
   | zero => omega
   | succ m ih =>
     simp only [encode]
-    rcases Nat.lt_succ_iff_lt_or_eq.mp hi with h | rfl
+    rcases Nat.lt_succ_iff_lt_or_eq.mp hi with h | h
     · obtain ⟨k, rfl⟩ : ∃ k, m = i + (k + 1) := ⟨m - i - 1, by omega⟩
       have e : x (i + (k + 1)) * 3 ^ (i + (k + 1)) = (x (i + (k + 1)) * 3 ^ k * 3) * 3 ^ i := by
         ring
@@ -46,8 +46,9 @@ theorem dg_encode (m : ℕ) (x : ℕ → ℕ) (hx : ∀ i, x i ≤ 2) {i : ℕ} 
       unfold dg at this ⊢
       rw [e, Nat.add_mul_div_right _ _ (by positivity), Nat.add_mul_mod_self_right]
       exact this
-    · have hlt := encode_lt i x hx
-      have := hx i
+    · rw [h]
+      have hlt := encode_lt m x hx
+      have := hx m
       unfold dg
       rw [Nat.add_mul_div_right _ _ (by positivity), Nat.div_eq_of_lt hlt, zero_add]
       omega
@@ -88,13 +89,13 @@ theorem step_eq_some {m b ν d : ℕ} {t : ℕ × ℕ} :
     step m (b, ν) d = some t ↔ d < 3 ^ m ∧ geq m d ν = true ∧ t = (d, need m b d) := by
   unfold step
   by_cases h : d < 3 ^ m ∧ geq m d ν = true
-  · rw [if_pos h]
+  · rw [ite_eq_left h]
     constructor
     · intro ht
       exact ⟨h.1, h.2, (Option.some.inj ht).symm⟩
     · rintro ⟨-, -, rfl⟩
       rfl
-  · rw [if_neg h]
+  · rw [ite_eq_right h]
     constructor
     · intro ht
       cases ht
@@ -113,7 +114,9 @@ theorem run_cons_eq_some {m b ν d : ℕ} {ds : List ℕ} {s : ℕ × ℕ} :
   constructor
   · intro h
     cases hst : step m (b, ν) d with
-    | none => rw [hst] at h; cases h
+    | none =>
+      rw [hst] at h
+      exact absurd h (by simp)
     | some t =>
       rw [hst] at h
       obtain ⟨h1, h2, rfl⟩ := step_eq_some.mp hst
@@ -147,8 +150,8 @@ theorem sum_map_range' (g : ℕ → ℕ) (s n : ℕ) :
   induction n generalizing s with
   | zero => simp
   | succ n ih =>
-    rw [List.range'_succ, List.map_cons, List.sum_cons, ih, Finset.sum_range_succ']
-    rw [add_comm]
+    rw [List.range'_succ, List.map_cons, List.sum_cons, ih, Finset.sum_range_succ', Nat.add_zero,
+      add_comm (g s)]
     congr 1
     apply Finset.sum_congr rfl
     intro j _
@@ -172,12 +175,12 @@ variable {m n : ℕ}
 theorem zext_eq_zero_of_row (f : Fin m × Fin n → ℕ) {i : ℕ} (hi : i = 0 ∨ m < i) (j : ℕ) :
     zext f i j = 0 := by
   unfold zext
-  rw [dif_neg (by omega)]
+  rw [dite_eq_right (by omega)]
 
 theorem zext_eq_zero_of_col (f : Fin m × Fin n → ℕ) (i : ℕ) {j : ℕ} (hj : j = 0 ∨ n < j) :
     zext f i j = 0 := by
   unfold zext
-  rw [dif_neg (by omega)]
+  rw [dite_eq_right (by omega)]
 
 /-- Column `j` of the weights `f` (columns numbered from 1), with weights cut to at most 2,
 as a base-3 number. -/
@@ -191,7 +194,7 @@ theorem col_lt (f : Fin m × Fin n → ℕ) (j : ℕ) : col f j < 3 ^ m :=
   encode_lt m _ (fun _ => min_le_left _ _)
 
 theorem col_zero (f : Fin m × Fin n → ℕ) : col f 0 = 0 :=
-  encode_eq_zero m _ (fun i _ => by rw [zext_eq_zero_of_col f _ (Or.inl rfl)]; rfl)
+  encode_eq_zero m _ (fun i _ => by simp [zext_eq_zero_of_col f _ (Or.inl rfl)])
 
 theorem run_of_dom (f : Fin m × Fin n → ℕ) (hf : IsDomFn (grid m n) 2 f) :
     ∀ k j ν, 1 ≤ j → j + k = n + 1 → (∀ i, i < m → dg ν i ≤ dg (col f j) i) →
@@ -216,19 +219,17 @@ theorem run_of_dom (f : Fin m × Fin n → ℕ) (hf : IsDomFn (grid m n) 2 f) :
       rw [nbhd_sum_grid] at hdom
       have e1 : j - 1 + 1 = j := by omega
       have e2 : j - 1 + 2 = j + 1 := by omega
-      simp only [e1, e2] at hdom
+      simp only [Fin.val_mk, e1, e2] at hdom
       have hup : (if i = 0 then 0 else dg (col f j) (i - 1)) = min 2 (zext f i j) := by
         by_cases h0 : i = 0
-        · rw [if_pos h0, zext_eq_zero_of_row f (Or.inl h0)]
-          rfl
-        · rw [if_neg h0, dg_col f j (by omega)]
+        · rw [ite_eq_left h0, zext_eq_zero_of_row f (Or.inl h0)] <;> rfl
+        · rw [ite_eq_right h0, dg_col f j (by omega)]
           have : i - 1 + 1 = i := by omega
           rw [this]
       have hdown : (if i + 1 < m then dg (col f j) (i + 1) else 0) = min 2 (zext f (i + 2) j) := by
         by_cases h1 : i + 1 < m
-        · rw [if_pos h1, dg_col f j h1]
-        · rw [if_neg h1, zext_eq_zero_of_row f (Or.inr (by omega))]
-          rfl
+        · rw [ite_eq_left h1, dg_col f j h1]
+        · rw [ite_eq_right h1, zext_eq_zero_of_row f (Or.inr (by omega))] <;> rfl
       rw [dg_need _ _ _ hi, dg_col f (j + 1) hi]
       unfold needAt tau
       rw [dg_col f (j - 1) hi, dg_col f j hi, hup, hdown]
@@ -265,7 +266,10 @@ theorem exists_run_of_dom (f : Fin m × Fin n → ℕ) (hf : IsDomFn (grid m n) 
           rw [dg_col f _ (Finset.mem_range.mp hi)]
           exact min_le_right _ _
       _ = ∑ v, f v := by
-          rw [Fintype.sum_prod_type, Finset.sum_comm, Finset.sum_range]
+          have hswap : ∑ v, f v = ∑ j : Fin n, ∑ i : Fin m, f (i, j) := by
+            rw [Fintype.sum_prod_type]
+            exact Finset.sum_comm
+          rw [hswap, Finset.sum_range]
           apply Finset.sum_congr rfl
           intro j _
           rw [Finset.sum_range]
@@ -306,8 +310,8 @@ theorem dom_cond_of_run {m : ℕ} : ∀ (l : List ℕ) (b ν : ℕ) (s : ℕ × 
       · have h1 := ih1 i hi
         rw [dg_need _ _ _ hi] at h1
         unfold needAt at h1
-        simp only [List.getD_cons_zero, List.getD_cons_succ, if_true]
-        omega
+        have h3 : 2 ≤ dg b i + tau m d i + dg (ds.getD 0 0) i := by omega
+        simpa using h3
       · have hq : q < ds.length := by simpa using hp
         have h2 := ih2 q hq i hi
         rcases q with _ | r
@@ -322,14 +326,13 @@ theorem exists_dom_of_run {m : ℕ} (l : List ℕ) (n : ℕ) (hn : l.length = n)
   subst hn
   obtain ⟨s, hrun, hfin⟩ := h
   obtain ⟨-, hcond⟩ := dom_cond_of_run l 0 0 s hrun hfin
-  let f : Fin m × Fin l.length → ℕ := fun v => dg (l.getD v.2.val 0) v.1.val
-  have hz : ∀ a b, zext f a b =
-      if (1 ≤ a ∧ a ≤ m) ∧ (1 ≤ b ∧ b ≤ l.length) then dg (l.getD (b - 1) 0) (a - 1) else 0 := by
-    intro a b
+  obtain ⟨f, hfdef⟩ : ∃ f : Fin m × Fin l.length → ℕ,
+      ∀ v, f v = dg (l.getD v.2.val 0) v.1.val := ⟨_, fun _ => rfl⟩
+  have hzin : ∀ a b, (1 ≤ a ∧ a ≤ m) ∧ (1 ≤ b ∧ b ≤ l.length) →
+      zext f a b = dg (l.getD (b - 1) 0) (a - 1) := by
+    intro a b hab
     unfold zext
-    by_cases hab : (1 ≤ a ∧ a ≤ m) ∧ (1 ≤ b ∧ b ≤ l.length)
-    · rw [dif_pos hab, if_pos hab]
-    · rw [dif_neg hab, if_neg hab]
+    rw [dite_eq_left hab, hfdef]
   refine ⟨f, ?_, ?_, ?_⟩
   · rintro ⟨i, j⟩
     have hi := i.isLt
@@ -337,55 +340,52 @@ theorem exists_dom_of_run {m : ℕ} (l : List ℕ) (n : ℕ) (hn : l.length = n)
     rw [nbhd_sum_grid]
     have hc := hcond j.val hj i.val hi
     unfold tau at hc
-    have hout : j.val + 1 < l.length ∨ l.getD (j.val + 1) 0 = 0 := by
-      by_cases hh : j.val + 1 < l.length
-      · exact Or.inl hh
-      · exact Or.inr (List.getD_eq_default _ _ (by omega))
+    have e1 : j.val + 1 - 1 = j.val := by omega
+    have e2 : i.val + 2 - 1 = i.val + 1 := by omega
+    have e3 : i.val + 1 - 1 = i.val := by omega
+    have e4 : j.val + 2 - 1 = j.val + 1 := by omega
     have t1 : zext f (i.val + 1) (j.val + 1) = dg (l.getD j.val 0) i.val := by
-      rw [hz, if_pos (by omega)]
-      rfl
-    have t2 : zext f i.val (j.val + 1) = if i.val = 0 then 0 else dg (l.getD j.val 0) (i.val - 1) := by
-      rw [hz]
+      rw [hzin _ _ (by omega), e1, e3]
+    have t2 : zext f i.val (j.val + 1)
+        = if i.val = 0 then 0 else dg (l.getD j.val 0) (i.val - 1) := by
       by_cases h0 : i.val = 0
-      · rw [if_neg (by omega), if_pos h0]
-      · rw [if_pos (by omega), if_neg h0]
-        rfl
+      · rw [ite_eq_left h0, zext_eq_zero_of_row f (Or.inl h0)]
+      · rw [ite_eq_right h0, hzin _ _ (by omega), e1]
     have t3 : zext f (i.val + 2) (j.val + 1)
         = if i.val + 1 < m then dg (l.getD j.val 0) (i.val + 1) else 0 := by
-      rw [hz]
       by_cases h1 : i.val + 1 < m
-      · rw [if_pos (by omega), if_pos h1]
-        rfl
-      · rw [if_neg (by omega), if_neg h1]
+      · rw [ite_eq_left h1, hzin _ _ (by omega), e1, e2]
+      · rw [ite_eq_right h1, zext_eq_zero_of_row f (Or.inr (by omega))]
     have t4 : zext f (i.val + 1) j.val
         = dg (if j.val = 0 then 0 else l.getD (j.val - 1) 0) i.val := by
-      rw [hz]
       by_cases h0 : j.val = 0
-      · rw [if_neg (by omega), if_pos h0, dg_zero]
-      · rw [if_pos (by omega), if_neg h0]
-        rfl
+      · rw [ite_eq_left h0, dg_zero, zext_eq_zero_of_col f _ (Or.inl h0)]
+      · rw [ite_eq_right h0, hzin _ _ (by omega), e3]
     have t5 : zext f (i.val + 1) (j.val + 2) = dg (l.getD (j.val + 1) 0) i.val := by
-      rw [hz]
-      rcases hout with h1 | h1
-      · rw [if_pos (by omega)]
-        rfl
-      · rw [h1, dg_zero]
-        by_cases h2 : j.val + 2 ≤ l.length
-        · rw [if_pos (by omega)]
-          have : j.val + 2 - 1 = j.val + 1 := by omega
-          rw [this, h1, dg_zero]
-        · rw [if_neg (by omega)]
+      by_cases h2 : j.val + 2 ≤ l.length
+      · rw [hzin _ _ (by omega), e4, e3]
+      · rw [zext_eq_zero_of_col f _ (Or.inr (by omega)), List.getD_eq_default _ _ (by omega),
+          dg_zero]
     rw [t1, t2, t3, t4, t5]
     omega
   · intro v
     have := dg_lt (l.getD v.2.val 0) v.1.val
-    show dg (l.getD v.2.val 0) v.1.val ≤ 2
+    rw [hfdef]
     omega
-  · rw [Fintype.sum_prod_type, Finset.sum_comm]
-    unfold wtL
-    rw [sum_map_getD, Finset.sum_range]
+  · have hswap : ∑ v, f v = ∑ j : Fin l.length, ∑ i : Fin m, f (i, j) := by
+      rw [Fintype.sum_prod_type]
+      exact Finset.sum_comm
+    have hw : wtL m l = ∑ j : Fin l.length, ∑ i : Fin m, dg (l.getD j.val 0) i.val := by
+      unfold wtL
+      rw [sum_map_getD, Finset.sum_range]
+      apply Finset.sum_congr rfl
+      intro j _
+      rw [wt_eq_sum, Finset.sum_range]
+    rw [hswap, hw]
     apply Finset.sum_congr rfl
     intro j _
-    rw [wt_eq_sum, Finset.sum_range]
+    apply Finset.sum_congr rfl
+    intro i _
+    rw [hfdef]
 
 end GridDomination

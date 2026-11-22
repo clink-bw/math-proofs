@@ -1,12 +1,22 @@
 #!/usr/bin/env python3
-"""Exact values for many n, and the eventual periodicity of the whole DP vector.
+"""Exact values for many n, and a proof by exact computation that they continue for ever.
 
-    python3 analyze.py M NMAX
+    python3 analyze.py M NMAX        (M = height 1..4; NMAX = 2000 is plenty)
 
-Prints gamma_{2}(P_M x P_n) for n <= NMAX compared with the conjectured formula, and looks for
-N, p, q with  v_{N+p} = v_N + q  (entrywise, over all states), where v_n is the DP vector.
-Because the DP step is "min-plus linear" (adding a constant to v adds it to the next vector),
-such an identity implies v_{n+p} = v_n + q for every n >= N, hence gamma(n+p) = gamma(n) + q.
+Prints gamma_{2}(P_M x P_n) for n <= NMAX, compares it with the formula, and looks for
+N, p, q with  v_{N+p} = v_N + q  entrywise, where v_n is the vector of the dynamic programme
+(one entry per state of the column automaton; v_n[s] is the least weight of n columns that
+lead to state s).
+
+Why that settles every n.  One step of the dynamic programme is
+    v_{n+1}[t] = min over transitions s -> t of (v_n[s] + weight of the new column),
+so adding a constant q to every entry of v_n adds q to every entry of v_{n+1}.  Hence
+v_{N+p} = v_N + q implies v_{n+p} = v_n + q for every n >= N, and therefore
+gamma(n + p) = gamma(n) + q for every n >= N.  The formula has the same property, so checking it
+for n < N + p proves it for all n.
+
+This script uses its own construction of the automaton (states found by search from the start
+state), independent of strip.py which the Lean generator uses.
 """
 import sys
 from itertools import product
@@ -35,10 +45,14 @@ def automaton(m):
     return states, trans, final
 
 def formula(m, n):
+    if m == 1:
+        return 2 * -(-n // 3)              # Lee-Liu Theorem 2.1
+    if m == 2:
+        return n + 1                       # Lee-Liu Theorem 2.3
     if m == 3:
-        return 3 * n // 2 + 1
+        return 3 * n // 2 + 1              # Lee-Liu Conjecture 2.5
     if m == 4:
-        return 2 * n - (n - 9) // 10       # conjectured for n >= 49
+        return 2 * n - (n - 9) // 10       # Lee-Liu Conjecture 3.7, stated for n >= 49
     raise ValueError
 
 if __name__ == "__main__":
@@ -74,3 +88,6 @@ if __name__ == "__main__":
         N, p, q = found
         ok = all(hist[n + p] == [x + q for x in hist[n]] for n in range(N, nmax - p + 1))
         print("  holds for all computed n >= N:", ok)
+        first_ok = min(n for n in range(1, N + p)
+                       if all(gam[k] == formula(m, k) for k in range(n, N + p)))
+        print(f"  formula holds for all n in [{first_ok}, {N + p}), hence for all n >= {first_ok}")
