@@ -1,12 +1,5 @@
 # Numbers occurring twice in, and missing from, the Wythoff ceiling array
 
-Proposed row for the results table in the root README (not added there, to avoid editing a file
-another branch is changing):
-
-| Project | Result | How it was checked |
-|---|---|---|
-| [wythoff-ceiling](wythoff-ceiling/) | Both of Kimberling's 2021 gap conjectures for the Wythoff ceiling array are true: numbers occurring twice (OEIS A341261) are spaced exactly 3, 5, 10 or 13 apart, and missing numbers (OEIS A341262) exactly 2, 3, 5, 10 or 13 apart (the 2 only once, between 1 and 3). No number occurs more than twice. | Lean |
-
 ## The array
 
 Let φ = (1 + √5)/2 be the golden ratio and F(1) = F(2) = 1, F(3) = 2, ... the Fibonacci numbers.

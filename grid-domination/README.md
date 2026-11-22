@@ -1,12 +1,5 @@
 # The integer {2}-domination number of grids with at most ten rows
 
-Row for the results table in the root `README.md`:
-
-| Project | Result | How it was checked |
-|---|---|---|
-| [grid-domination](grid-domination/) | The integer {2}-domination number of the m × n grid, for every n, for m = 3, 4, 5: for example ⌊3n/2⌋ + 1 for 3 rows and 2n − ⌊(n − 9)/10⌋ for 4 rows and n ≥ 49 (Conjectures 2.5 and 3.7 of Lee and Liu, arXiv:2502.00134; independent proofs, not the first), and ⌈(23n + 17)/10⌉ for 5 rows and n ≥ 19 (apparently new). | Lean |
-| [grid-domination](grid-domination/) | The same number for m = 6 to 10 rows and every n (apparently new); for 9 rows it is exactly 4n + 2. | Exact computation |
-
 A draft paper is at [paper/grid-2-domination.pdf](paper/grid-2-domination.pdf). It has not been
 peer reviewed.
 
@@ -244,5 +237,5 @@ the largest n for which to print a pattern; those of `pairs` are the number of r
 n, and the N, p, q reported by `fast`. Ten rows takes about two hours of processor time and nine
 rows a few minutes; the others take seconds.
 
-`GridDomination` is not yet listed in `defaultTargets` in `lakefile.toml`, so a plain
-`lake build` does not build it; add it there when this project is merged.
+`GridDomination` is listed in `defaultTargets` in `lakefile.toml`, so a plain `lake build`
+builds it along with the other libraries.

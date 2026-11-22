@@ -1,9 +1,3 @@
-Proposed row for the results table in the root README:
-
-| Project | Result | How it was checked |
-|---|---|---|
-| [paradoxical-tournaments](paradoxical-tournaments/) | Erdős problem 902 (Schütte's tournament problem), a negative search: no Cayley tournament with 47 to 65 players (circulant, or on any of the six non-cyclic groups of those orders) is 4-paradoxical. The bounds 47 ≤ f(4) ≤ 67 are unchanged. The circulant half repeats an unpublished 1996 computation of D. Fisher. | Exact computation (C), cross-checked by an independent Python checker |
-
 # Schütte's tournament problem: a search below 67 players
 
 A tournament is a set of players in which every pair plays once and one of the two wins. It is
