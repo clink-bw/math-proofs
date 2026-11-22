@@ -1,0 +1,560 @@
+\documentclass[12pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+
+\newcommand{\fl}[1]{\lfloor #1 \rfloor}
+\newcommand{\ce}[1]{\lceil #1 \rceil}
+\newcommand{\g}{\gamma_{\{2\}}}
+\newcommand{\G}[2]{P_{#1}\,\square\,P_{#2}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\title{The Integer $\{2\}$-Domination Number of Grids\\ with at Most Ten Rows}
+\author{Camden Link}
+\date{Draft of November 22, 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+An integer $\{2\}$-dominating function of a graph assigns to each vertex a weight $0$, $1$ or
+$2$ so that the weights on every vertex and its neighbours sum to at least $2$; the integer
+$\{2\}$-domination number is the least total weight. Lee and Liu determined this number for
+grids with one and two rows and conjectured formulas for three and four rows. Both conjectures
+are true; this was first shown in an online repository of machine-checked proofs, and we give
+independent proofs. Our main results are new: for every number of rows from five to ten we
+determine the integer $\{2\}$-domination number of the grid for every number of columns. For
+nine rows it is exactly $4n+2$. The proofs treat the problem as a shortest-path problem over
+column states in the $(\min,+)$ algebra. For two to five rows the results are formally verified
+in the Lean proof assistant, by certificates that Lean's kernel evaluates; for six to ten rows
+they rest on exact computation, cross-checked as described.
+\end{abstract}
+
+\section{Introduction}
+
+Let $G=(V,E)$ be a finite graph and write $N[v]$ for the closed neighbourhood of a vertex $v$.
+For a positive integer $k$, an \emph{integer $\{k\}$-dominating function} of $G$ is a function
+$f\colon V\to\{0,1,2,\dots\}$ with $\sum_{u\in N[v]}f(u)\ge k$ for every $v\in V$, and the
+\emph{integer $\{k\}$-domination number} $\gamma_{\{k\}}(G)$ is the least value of
+$\sum_{v\in V}f(v)$ over such functions. The notion is due to Domke, Hedetniemi, Laskar and
+Fricke~\cite{dhlf}; see also Bre\v{s}ar, Henning and Klav\v{z}ar~\cite{bhk}. For $k=1$ it is the
+ordinary domination number $\gamma(G)$. Replacing every value of $f$ above $k$ by $k$ keeps the
+condition, so one may take $f\colon V\to\{0,\dots,k\}$. The number $\g(G)$ should not be
+confused with the $2$-domination, double domination, Roman or Italian domination numbers; the
+known relations among these parameters are inequalities~\cite{bbgms}.
+
+We study the grid $\G mn$, the Cartesian product of paths with $m$ and $n$ vertices, drawn with
+$m$ rows and $n$ columns, and write
+\[
+\gamma(m,n)=\g(\G mn).
+\]
+Clearly $\gamma(m,n)=\gamma(n,m)$. Lee and Liu~\cite{ll} proved that $\gamma(1,n)=2\ce{n/3}$ and
+$\gamma(2,n)=n+1$, proved that $\gamma(3,n)\le\fl{3n/2}+1$, described an algorithm that computes
+$\gamma(m,n)$ column by column, listed $\gamma(4,n)$ for $n\le100$, and made two conjectures.
+
+\begin{theorem}[Conjectures 2.5 and 3.7 of Lee and Liu]\label{thm:ll}
+\begin{enumerate}
+\item[(a)] $\gamma(3,n)=\fl{3n/2}+1$ for every $n\ge1$.
+\item[(b)] $\gamma(4,n)=2n-\fl{(n-9)/10}$ for every $n\ge49$. More precisely, for every $n\ge1$,
+\[
+\gamma(4,n)=\Bigl\lceil\frac{19n+9}{10}\Bigr\rceil+\varepsilon(n),
+\qquad
+\varepsilon(n)=\begin{cases}1&\text{if }n=1,\\-1&\text{if }n\in\{4,7,8,15,18,26,37,48\},\\0&\text{otherwise.}\end{cases}
+\]
+\end{enumerate}
+\end{theorem}
+
+For $n\ge9$ the expressions $\ce{(19n+9)/10}$ and $2n-\fl{(n-9)/10}$ coincide, and
+$\gamma(4,48)=92$ is one less than the formula, so the bound $49$ in (b) is best possible.
+
+Theorem~\ref{thm:ll} is not new. A proof of (a) formalized in Lean was merged into the public
+repository~\cite{omega} on 18 October 2026, and a proof of (b) by exact computation, of the kind
+described in Section~\ref{sec:periodic}, was posted there on 16 October 2026; that repository
+consists of machine-generated, machine-checked mathematics and its results have not appeared in
+a journal. We learned of it from a literature search made while the present proofs were being
+formalized, and did not use it. We include Theorem~\ref{thm:ll} because our proofs and
+formalization are independent, because the Lean statement for four rows covers every $n\ge1$,
+and because the same method gives the following. We found no earlier statement of these values;
+however, Hare~\cite{hare90} studied the same parameter for products of paths in 1990, under the
+name $k$-weight domination, in a paper that we were not able to consult, so we cannot exclude
+that some of them appear there.
+
+\begin{theorem}\label{thm:main}
+\begin{enumerate}
+\item[(5)] $\gamma(5,n)=\ce{(23n+17)/10}$ for every $n\ge1$, except that it is one less for
+$n\in\{2,3,5,6,8,9,12,15,18\}$. Equivalently,
+$\gamma(5,n)=\min\bigl\{\fl{(7n+5)/3},\,\ce{(23n+17)/10}\bigr\}$ for every $n\ge1$.
+\item[(6)] $\gamma(6,n)=\ce{(41n+18)/15}$ for every $n\ge1$, except that $\gamma(6,16)=46$ is
+one more.
+\item[(7)] $\gamma(7,n)=3n+3+\fl{n/11}+\delta(n)$ for every $n\ge1$, where $\delta(n)=1$ if
+$n\equiv8$ or $10\pmod{11}$ and $\delta(n)=0$ otherwise, except that it is one less for
+$n\in\{2,3,4,8\}$.
+\item[(8)] $\gamma(8,n)=\ce{(46n+32)/13}$ for every $n\ge1$, except that it is one less for
+$n\in\{2,3,4,5,7,9,16,18\}$.
+\item[(9)] $\gamma(9,n)=4n+2$ for every $n\ge1$.
+\item[(10)] $\gamma(10,n)=\ce{(57n+28)/13}+\eta(n)$ for every $n\ge52$, where $\eta(n)=-1$
+if $n\equiv1$, $5$ or $21\pmod{26}$, $\eta(n)=1$ if $n\equiv2\pmod{26}$, and $\eta(n)=0$
+otherwise. For $1\le n\le51$ the same formula holds except that the value is larger by $1$ for
+$n\in\{5,7,10,17,21,25,31,33,36,51\}$, larger by $2$ for $n=1$, and smaller by $1$ for $n=2$.
+\end{enumerate}
+\end{theorem}
+
+Table~\ref{tab:summary} summarizes the results and how each was verified. Parts (a), (b) and
+(5) are proved in Lean (Section~\ref{sec:lean}). Parts (6) to (9) are proved by exact
+computation with two independent programs, and part (10) by one program for the lower bound;
+for six to ten rows the upper bounds are also checked directly from the definition
+(Section~\ref{sec:comp}).
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{rrcccl}
+\toprule
+$m$ & states & growth per column & $N$ & $p$ & verification\\
+\midrule
+1 & 6 & $2/3$ & 3 & 3 & Lee and Liu~\cite{ll}\\
+2 & 23 & $1$ & 5 & 2 & Lee and Liu~\cite{ll}; Lean\\
+3 & 95 & $3/2$ & 15 & 4 & Lean\\
+4 & 389 & $19/10$ & 67 & 10 & Lean\\
+5 & 1595 & $23/10$ & 30 & 10 & Lean\\
+6 & 6538 & $41/15$ & 30 & 15 & two programs\\
+7 & 26802 & $34/11$ & 24 & 11 & two programs\\
+8 & 109872 & $46/13$ & 34 & 13 & two programs\\
+9 & 450410 & $4$ & 38 & 3 & two programs\\
+10 & 1846415 & $57/13$ & 61 & 26 & one program\\
+\bottomrule
+\end{tabular}
+\caption{For each number of rows $m$: the number of states of the column automaton of
+Section~\ref{sec:automaton}, the limit of $\gamma(m,n)/n$, and the numbers $N$ and $p$ of
+Proposition~\ref{prop:periodic}, for which the vector of the dynamic programme repeats with
+period $p$ from column $N$ on.}\label{tab:summary}
+\end{table}
+
+For $m\le3$ the growth per column is exactly twice that of the domination number, so
+$\gamma(m,n)$ stays within a bounded distance of the trivial bound $2\gamma(\G mn)$. From four
+rows on it is smaller. We return to this in Section~\ref{sec:open}.
+
+The method is the transfer-matrix method over the $(\min,+)$ semiring, which goes back to
+Klav\v{z}ar and \v{Z}erovnik~\cite{kz} and Livingston and Stout~\cite{ls} for domination-type
+problems on grids of fixed height, and was used by Gon\c{c}alves, Pinlou, Rao and
+Thomass\'e~\cite{gprt} and by Rao and Talon~\cite{rt} for the domination, $2$-domination and
+Roman domination numbers of all grids. Livingston and Stout observed that, for a fixed number
+of rows, the dynamic programme is eventually periodic, so that finitely many steps determine a
+formula for all $n$. Lee and Liu's algorithm computes the same dynamic programme, but for one
+$n$ at a time, which is why their statements for three and four rows remained conjectures.
+Section~\ref{sec:cert} puts the argument in a form that a proof assistant can check without
+trusting the program that found it.
+
+\section{The column automaton}\label{sec:automaton}
+
+Fix $m$. A \emph{column} is a vector $c=(c_1,\dots,c_m)\in\{0,1,2\}^m$, with weight
+$|c|=c_1+\dots+c_m$; put $c_0=c_{m+1}=0$ and
+\[
+\tau_i(c)=c_{i-1}+c_i+c_{i+1}\qquad(1\le i\le m),
+\]
+the weight that the vertex in row $i$ of the column receives from the column itself. A function
+$f\colon V(\G mn)\to\{0,1,2\}$ is a sequence of columns $c^1,\dots,c^n$; put
+$c^0=c^{n+1}=0$. The vertex in row $i$ of column $j$ satisfies the domination condition if and
+only if
+\begin{equation}\label{eq:local}
+c^{j-1}_i+\tau_i(c^j)+c^{j+1}_i\ge2 .
+\end{equation}
+For columns $a,b$ define the \emph{need} vector $r(a,b)$ by
+$r(a,b)_i=\max\bigl(0,\,2-a_i-\tau_i(b)\bigr)$. Then \eqref{eq:local} holds for all rows $i$ of
+column $j$ if and only if $c^{j+1}\ge r(c^{j-1},c^j)$ in every coordinate.
+
+Thus, when the columns are read from left to right, all that matters about the past is the pair
+$(b,\nu)$ consisting of the last column $b$ and the need vector $\nu$ that the next column must
+dominate. Let $S_m$ be the set of pairs $(b,\nu)$ with $0\le\nu_i\le\max(0,2-\tau_i(b))$ for all
+$i$; these are exactly the pairs $(b,r(a,b))$. Consider the automaton with state set $S_m$,
+initial state $(0,0)$, a transition
+\[
+(b,\nu)\ \xrightarrow{\;c\;}\ (c,\,r(b,c))\qquad\text{whenever } c\ge\nu\text{ coordinatewise},
+\]
+of cost $|c|$, and final states the pairs $(b,0)$.
+
+\begin{lemma}\label{lem:bridge}
+The integer $\{2\}$-dominating functions $f\colon V(\G mn)\to\{0,1,2\}$ correspond bijectively to
+the walks of $n$ transitions from the initial state to a final state, and the weight of $f$ is
+the cost of the walk. Hence $\gamma(m,n)$ is the least cost of such a walk.
+\end{lemma}
+
+\begin{proof}
+Reading $c^1,\dots,c^n$ from the initial state, the transition reading $c^{j+1}$ is allowed if
+and only if $c^{j+1}\ge r(c^{j-1},c^j)$, that is, if and only if column $j$ is dominated; this
+holds trivially for $j=0$. The last state $(c^n,r(c^{n-1},c^n))$ is final if and only if
+$0=c^{n+1}\ge r(c^{n-1},c^n)$, that is, if and only if column $n$ is dominated.
+\end{proof}
+
+The numbers $|S_m|$ for $m=1,\dots,10$ are $6$, $23$, $95$, $389$, $1595$, $6538$, $26802$,
+$109872$, $450410$, $1846415$. The first seven agree with the numbers of ``feasible columns''
+counted by Lee and Liu.
+
+\section{Eventual periodicity}\label{sec:periodic}
+
+For $n\ge0$ and $s\in S_m$ let $v_n(s)$ be the least cost of a walk of $n$ transitions from the
+initial state to $s$, or $\infty$ if there is none. Then $v_0$ is $0$ at the initial state and
+$\infty$ elsewhere,
+\begin{equation}\label{eq:dp}
+v_{n+1}(t)=\min\bigl\{\,v_n(s)+|c| \;:\; s\xrightarrow{\,c\,}t\,\bigr\},
+\qquad
+\gamma(m,n)=\min\{v_n(s): s\text{ final}\}.
+\end{equation}
+Write \eqref{eq:dp} as $v_{n+1}=T(v_n)$. The map $T$ commutes with adding a constant to every
+entry.
+
+\begin{proposition}\label{prop:periodic}
+Suppose that for some $N\ge0$, $p\ge1$ and $q$ all entries of $v_N$ are finite and
+$v_{N+p}=v_N+q$ entrywise. Then $v_{n+p}=v_n+q$ for every $n\ge N$, and therefore
+$\gamma(m,n+p)=\gamma(m,n)+q$ for every $n\ge N$.
+\end{proposition}
+
+\begin{proof}
+If $v_{n+p}=v_n+q$ then $v_{n+1+p}=T(v_n+q)=T(v_n)+q=v_{n+1}+q$.
+\end{proof}
+
+So a single coincidence between two vectors, found by running \eqref{eq:dp}, determines
+$\gamma(m,n)$ for all $n$ from its values for $n<N+p$. Such a coincidence must occur: the
+transition graph is strongly connected, and the powers of an irreducible matrix over the
+$(\min,+)$ semiring are ultimately periodic up to an additive constant~\cite[Chapter~3]{bcoq}.
+Table~\ref{tab:summary} lists, for each $m$, values of $N$ and $p$ for which the hypothesis
+holds (the first coincidence that the computation meets). With the values of
+$\gamma(m,n)$ for $n<N+p$, this proves Theorems~\ref{thm:ll} and~\ref{thm:main} by exact
+computation. The repeating block need not have length $p$: for five rows the vector has period
+$10$, while every repeating block of columns of optimal density has length a multiple of $20$,
+the second half being the mirror image of the first (Figure~\ref{fig:blocks}).
+
+\section{Upper bounds: patterns}\label{sec:upper}
+
+By Lemma~\ref{lem:bridge} an upper bound for $\gamma(m,n)$ is a list of columns. If such a list
+contains positions $i<i'$ with $(c^{i},c^{i+1})=(c^{i'},c^{i'+1})$, then the block
+$c^{i+1},\dots,c^{i'}$ may be repeated any number of times, because every window of three
+consecutive columns in the longer list already occurs in the original one and \eqref{eq:local}
+involves only such windows. Figures~\ref{fig:blocks} and~\ref{fig:nine} show repeatable blocks
+of optimal density for $3\le m\le 9$. For each $m$, a finite set of lists containing such blocks, one or more for
+each residue of $n$ modulo the block length, gives valid lists of every length whose weights
+are the values in Theorems~\ref{thm:ll} and~\ref{thm:main}.
+
+\begin{figure}[ht]
+\small
+\begin{verbatim}
+ m=3 (4 columns, weight 6)      m=4 (10 columns, weight 19)
+   . 1 . 1                        . . 2 . . 1 . 1 . 1
+   . 1 . 1                        1 . . . 1 1 . 1 . 1
+   . 1 . 1                        . 1 . 1 . . . 1 . .
+                                  . 1 . 1 . 1 1 . 1 1
+
+ m=5 (20 columns, weight 46)
+   . 1 . 1 . 1 1 . . 1 1 . 1 . 1 1 . . 1 1
+   . 1 . 1 . . . 1 1 . . . 2 . . . 1 1 . .
+   1 . . . 1 1 . . . 1 1 . . . 1 1 . . . 1
+   . . 2 . . . 1 1 . . . 1 . 1 . . . 1 1 .
+   1 . 1 . 1 1 . . 1 1 . 1 . 1 . 1 1 . . 1
+
+ m=6 (15 columns, weight 41)          m=7 (11 columns, weight 34)
+   . 1 1 . 1 . 1 . 1 1 . . 1 1 .        . 1 . 1 . 1 1 . . 1 1
+   1 . . . 1 . 1 . . . 1 1 . . 1        . 1 . 1 . . . 1 1 . .
+   . . 1 1 . . . 1 1 . . . . 2 .        1 . . . 1 1 . . . . 1
+   1 1 . . . 2 . . . 1 1 1 . . .        . . 2 . . . 1 1 1 1 .
+   . . . 1 1 . . 1 1 . . . 1 . 1        1 . . . 1 1 . . . . 1
+   . 1 1 . . 1 1 . . 1 1 . 1 . 1        . 1 . 1 . . . 1 1 . .
+                                        . 1 . 1 . 1 1 . . 1 1
+
+ m=8 (26 columns, weight 92)
+   . . 1 1 . 1 . 1 . 1 1 . . 1 1 . 1 . 1 . 1 1 . . 1 1
+   1 1 . . . 1 . 1 . . . 1 1 . . . 1 . 1 . . . 1 1 . .
+   . . . 1 1 . . . 1 1 . . . . 1 1 . . . 1 1 . . . 1 1
+   . 1 1 . . . 2 . . . 1 1 1 1 . . . 2 . . . 1 1 . . .
+   1 . . . 2 . . . 1 1 . . . . 1 1 . . . 2 . . . 1 1 1
+   . 1 1 . . . 1 1 . . . 1 1 . . . 1 1 . . . 1 1 . . .
+   . . . 1 . 1 . . . 1 1 . . 1 1 . . . 1 . 1 . . . 1 1
+   1 1 . 1 . 1 . 1 1 . . 1 1 . . 1 1 . 1 . 1 . 1 1 . .
+\end{verbatim}
+\caption{Blocks of columns that can be repeated indefinitely in an optimal pattern. A dot is
+weight $0$. The weight divided by the number of columns is the growth rate in
+Table~\ref{tab:summary}.}\label{fig:blocks}
+\end{figure}
+
+\begin{figure}[ht]
+\small
+\begin{verbatim}
+ m=9 (26 columns, weight 104)
+   . . 1 1 . . 2 . . 1 . 1 . 1 . 1 . 1 1 . 1 . 1 . 1 1
+   1 1 . . 1 . . . 1 1 . 1 . 1 . 1 . . . . 1 . 1 . . .
+   . . 1 . 1 1 . 1 . . . 1 1 . . . 1 1 1 1 . . . 1 1 .
+   1 . 1 . . . . 1 . 1 1 . . . 2 . . . . . . 2 . . . 1
+   . . . 1 1 1 1 . . . 1 . 1 . . . 1 1 1 1 . . . 1 . 1
+   . 2 . . . . . . 2 . . . 1 1 . 1 . . . . 1 . 1 1 . .
+   . . . 1 1 1 1 . . . 1 1 . . . 1 . 1 1 . 1 . . . 1 1
+   1 . 1 . . . . 1 . 1 . . . 1 1 . . 1 . . . 1 1 . 1 .
+   1 . 1 . 1 1 . 1 . 1 . 1 1 . . 1 1 . . 2 . . 1 . 1 .
+\end{verbatim}
+\caption{A repeatable block for nine rows, of density $4$.}\label{fig:nine}
+\end{figure}
+
+Short grids can be cheaper than the long-run formula. For four rows there is a second block,
+of $11$ columns and weight $21$. Its density $21/11$ exceeds $19/10$, but it meets the two ends
+of the grid at lower cost: it gives patterns of weight $(21n+4)/11$ whenever
+$n\equiv4\pmod{11}$, and for $n=4,15,26,37,48$ this is one less than $\ce{(19n+9)/10}$. For
+instance
+\begin{verbatim}
+   . 1 1 . . 1 1 . 1 1 . . 1 1 .
+   1 . . 1 1 . . 1 . . 1 1 . . 1
+   1 . . 1 . . . 2 . . . 1 . . 1
+   . 1 1 . . 2 . . . 2 . . 1 1 .
+\end{verbatim}
+has weight $29=\gamma(4,15)$. From $n=59$ on the two families cost the same or the first is
+cheaper. This is the source of most of the exceptional values in Theorem~\ref{thm:ll}(b) and
+of the threshold $49$. Five rows behave in the same way: $\gamma(5,n)=\fl{(7n+5)/3}$ for
+$n\le30$, a growth of $7/3$ per column, and the slower growth $23/10$ takes over from $n=31$.
+
+\section{Lower bounds: certificates}\label{sec:cert}
+
+Proposition~\ref{prop:periodic} proves the lower bounds, but checking it means running the
+dynamic programme. For the formal proofs we use a statement that can be checked one transition
+at a time. Fix positive integers $K,R$ and integers $C$ and $J\ge0$.
+
+\begin{lemma}\label{lem:cert}
+Suppose there are functions $L_0,\dots,L_J\colon S_m\to\N\cup\{\infty\}$ and $F\colon S_m\to\Z$
+such that
+\begin{enumerate}
+\item[(i)] $L_0$ is $0$ at the initial state;
+\item[(ii)] $L_{j+1}(t)\le L_j(s)+|c|$ for every transition $s\xrightarrow{c}t$ and every $j<J$;
+\item[(iii)] $F(s)+RJ\le K\,L_J(s)$ for every state $s$;
+\item[(iv)] $F(t)+R\le F(s)+K|c|$ for every transition $s\xrightarrow{c}t$;
+\item[(v)] $F(s)\ge C$ for every final state $s$.
+\end{enumerate}
+Then $K\,\gamma(m,n)\ge Rn+C$ for every $n\ge J$, and $\gamma(m,n)\ge\min\{L_n(s):s\text{ final}\}$
+for every $n\le J$.
+\end{lemma}
+
+\begin{proof}
+By (i) and (ii), $L_j\le v_j$ for $j\le J$, which gives the second statement. By (iii),
+$F(s)+RJ\le K v_J(s)$, and by (iv) and induction $F(s)+Rn\le K v_n(s)$ for all $n\ge J$. Apply
+(v) to a final state attaining $\gamma(m,n)$.
+\end{proof}
+
+Taking $L_j=v_j$ and $F(s)=\inf_{n\ge J}\bigl(Kv_n(s)-Rn\bigr)$ shows that a certificate exists
+whenever $K\gamma(m,n)\ge Rn+C$ holds for all $n\ge J$ and $R/K$ is the growth rate. Since
+$\gamma(m,n)$ is an integer, the conclusion reads $\gamma(m,n)\ge\ce{(Rn+C)/K}$. The values used
+are $(K,R,C,J)=(1,1,1,1)$ for two rows, $(2,3,1,1)$ for three, $(10,19,9,49)$ for four and
+$(10,23,17,19)$ for five. For two and three rows the potential $F$ alone gives the exact answer
+for all $n\ge1$; for four and five rows the tables $L_0,\dots,L_{49}$ and $L_0,\dots,L_{19}$
+are needed because of the exceptional short grids described in Section~\ref{sec:upper}.
+
+\section{Formal verification}\label{sec:lean}
+
+The following are proved in Lean~4~\cite{lean4} with Mathlib~\cite{mathlib}. The grid is
+Mathlib's Cartesian product of two path graphs,
+\begin{center}
+\texttt{SimpleGraph.pathGraph m $\square$ SimpleGraph.pathGraph n},
+\end{center}
+on the vertex set \texttt{Fin m $\times$ Fin n}. For a graph $G$, \texttt{IsDomFn G k f} says that
+$f\colon V\to\N$ satisfies $k\le f(v)+\sum_{u\in N(v)}f(u)$ for every vertex $v$, and
+\texttt{domNum G k} is the least value of $\sum_v f(v)$ over such $f$.
+
+\begin{itemize}
+\item \texttt{domNum\_grid\_two}: $\gamma(2,n)=n+1$ for $n\ge1$.
+\item \texttt{domNum\_grid\_three}: Theorem~\ref{thm:ll}(a).
+\item \texttt{domNum\_grid\_four} and \texttt{domNum\_grid\_four\_of\_ge}:
+Theorem~\ref{thm:ll}(b), for all $n\ge1$ and in Lee and Liu's form for $n\ge49$;
+\texttt{domNum\_grid\_four\_48}: $\gamma(4,48)=92$.
+\item \texttt{domNum\_grid\_five} and \texttt{domNum\_grid\_five\_of\_ge}:
+Theorem~\ref{thm:main}(5), for all $n\ge1$ and as $\ce{(23n+17)/10}$ for $n\ge19$.
+\item \texttt{exists\_dom\_grid\_three}, \texttt{\_four}, \texttt{\_five}: the minimum is
+attained by a function with values in $\{0,1,2\}$.
+\end{itemize}
+
+The statements are about the graph; the automaton appears only in the proofs. The file
+\texttt{Bridge.lean} proves Lemma~\ref{lem:bridge} for all $m$ and $n$, with columns encoded as
+numbers in base $3$, and \texttt{Certificate.lean} proves Lemma~\ref{lem:cert} and the
+repetition argument of Section~\ref{sec:upper}. These two files are written by hand. A program computes
+the data: the tables $L_j$ and $F$, a transition table, and the lists of columns for the upper
+bounds. The generated files contain this data and assertions that certain boolean functions
+return \texttt{true} on it, proved by evaluation in Lean's kernel. An error in the program can
+therefore cause a proof to fail but cannot cause a false statement to be accepted. No
+\texttt{native\_decide} is used, and all proofs use no axioms beyond the three standard ones of
+Lean's classical logic.
+
+Kernel evaluation is slow compared with compiled code, and two points made the computation
+feasible. Tables are packed into single natural numbers, so that a lookup is a shift and a
+remainder, which the kernel performs with its built-in arithmetic. And the transitions are not
+recomputed in each round of condition~(ii): a transition table is checked once against the
+definition of the automaton, and conditions (ii) and (iv) then read it. For five rows the
+table has $1595$ rows of $243$ entries, the conditions are checked in $236$ separate kernel
+computations, and the generated file has $1.3$ megabytes; checking it takes about ten minutes
+on a laptop, and the whole development about twelve. The checks have to be run one at a time:
+by default Lean elaborates the proofs in a file in parallel, and the kernel's caches for all of
+them together exhaust the memory of a small machine.
+Six rows would need a table about fifty times larger and was not attempted.
+
+\section{Computation for six to ten rows}\label{sec:comp}
+
+For $m\ge6$ the results rest on exact integer computation by the following programs, which are
+in the repository with the Lean development.
+
+\emph{Lower and upper bounds together.} A program runs \eqref{eq:dp} until it finds $N$ and $p$
+with $v_{N+p}=v_N+q$. For each last column $b$ it computes
+$\min\{v_n(b,\nu):\nu\le c\}$ for all $c$ at once by running minima along each coordinate, so a
+step costs about $m\,9^m$ operations instead of one operation per transition. Ten rows
+($1\,846\,415$ states) took about two hours of processor time on a laptop.
+
+\emph{Independent check.} A second program uses a different dynamic programme, whose states are
+all $9^m$ pairs of consecutive columns with no compression, and the dual transform (minima over
+upper sets). For $3\le m\le9$ it reproduces every value $\gamma(m,n)$ for $n\le N+p$ and
+verifies the periodicity $V_{N+1+p}=V_{N+1}+q$ of its own vector. For ten rows it would need
+more memory than was available, so for that height the lower bound depends on the first program
+alone.
+
+\emph{Upper bounds from the definition.} The first program also prints an optimal list of
+columns for each $n$ up to a bound beyond $N+p$. A short script rebuilds each list as an
+$m\times n$ array, checks the domination condition at every vertex directly, finds repeatable
+blocks as in Section~\ref{sec:upper}, and confirms that the lists and their extensions cover
+every $n\ge1$ with the weights of Theorems~\ref{thm:ll} and~\ref{thm:main}. This was done for
+$1\le m\le 10$; it does not depend on any dynamic programme. (For ten rows the repeatable
+block has $52$ columns and weight $228$, and lists of up to $158$ columns are needed to cover
+every residue.)
+
+\emph{Further checks.} The identity $\gamma(m,n)=\gamma(n,m)$ holds for all computed values
+with $m,n\le10$, where the two sides come from automata of different sizes. Exhaustive search
+over all functions agrees with the dynamic programme for the $28$ grids with at most $14$
+vertices and $m\le4$. The values for $m=4$ and $n\le100$ agree with the table of Lee and Liu.
+
+\section{Remarks and open questions}\label{sec:open}
+
+\begin{enumerate}
+\item \emph{Comparison with domination and fractional domination.} For every graph,
+$2\gamma_f(G)\le\g(G)\le2\gamma(G)$, where $\gamma_f$ is the fractional domination
+number~\cite{dhlf,bhk}. Table~\ref{tab:compare} compares the growth per column of the three
+quantities for grids, using the bounds of Hare~\cite{hare94} for $\gamma_f$ and the known
+formulas for $\gamma$~\cite{aciop,gprt}. For three rows $\g$ grows like $2\gamma$; from four
+rows on it lies strictly between the two bounds, so neither determines it.
+\begin{table}[ht]
+\centering
+\begin{tabular}{rccc}
+\toprule
+$m$ & $2\gamma_f$ & $\g$ & $2\gamma$\\
+\midrule
+3 & $10/7\approx1.429$ & $3/2=1.5$ & $3/2=1.5$\\
+4 & $20/11\approx1.818$ & $19/10=1.9$ & $2$\\
+5 & $20/9\approx2.222$ & $23/10=2.3$ & $12/5=2.4$\\
+6 & $76/29\approx2.621$ & $41/15\approx2.733$ & $20/7\approx2.857$\\
+7 & $142/47\approx3.021$ & $34/11\approx3.091$ & $10/3\approx3.333$\\
+8 & $65/19\approx3.421$ & $46/13\approx3.538$ & $15/4=3.75$\\
+\bottomrule
+\end{tabular}
+\caption{Growth per column, as $n\to\infty$, of twice the fractional domination number, of the
+integer $\{2\}$-domination number, and of twice the domination number of $\G mn$.}\label{tab:compare}
+\end{table}
+\item \emph{All grids.} Since every closed neighbourhood has at most five vertices,
+$\gamma(m,n)\ge 2mn/5$, and $\gamma(m,n)\le2\gamma(\G mn)$, so $\gamma(m,n)/(mn)\to2/5$ as
+$m,n\to\infty$. The growth rates in Table~\ref{tab:summary}, divided by $m$, are
+$0.667$, $0.5$, $0.5$, $0.475$, $0.46$, $0.456$, $0.442$, $0.442$, $0.444$, $0.438$ for
+$m=1,\dots,10$.
+Is there a formula for $\gamma(m,n)$ valid for all sufficiently large $m$
+and $n$, in the way that $\gamma(\G mn)=\fl{(m+2)(n+2)/5}-4$ for $16\le m\le n$~\cite{gprt}?
+The method of~\cite{gprt,rt}, which bounds the loss at the border of the grid, seems the
+natural approach.
+\item \emph{Nine rows.} Is there a proof of $\gamma(9,n)=4n+2$ that a person can check by hand?
+\item \emph{Square grids.} The values of $\gamma(n,n)$ for $n=1,\dots,10$ are
+$2,3,5,8,13,18,24,31,38,47$.
+\item \emph{Formal proofs for more rows.} The certificate of Lemma~\ref{lem:cert} for six rows
+has $6538$ states and $729$ columns. A more economical encoding, for instance one that uses the
+symmetry exchanging top and bottom, might bring it within reach of kernel evaluation.
+\item \emph{Other values of $k$.} The automaton extends to integer $\{k\}$-domination with
+weights in $\{0,\dots,k\}$; the number of states grows quickly with $k$.
+\end{enumerate}
+
+\section{Use of AI tools}\label{sec:ai}
+
+This work was carried out with an AI system, Claude (Anthropic), under the direction of the
+author. The AI system read the source paper, carried out the literature search, found the
+proofs, wrote the Lean formalization and all computer programs, ran the computations, and wrote
+the text of this draft. The author chose the problem from a list, directed the work, and
+decided what to pursue. The statements listed in Section~\ref{sec:lean} have been checked by
+Lean; the remaining results have been checked by exact computation as described in
+Section~\ref{sec:comp} but have not been reviewed by a mathematician. The literature search,
+including what could not be accessed, is recorded in the repository.
+
+\begin{thebibliography}{99}
+
+\bibitem{aciop}
+S. Alanko, S. Crevals, A. Isopoussu, P. \"Osterg{\aa}rd and V. Pettersson, Computing the
+domination number of grid graphs, \emph{Electron. J. Combin.} \textbf{18} (2011), Paper~141.
+
+\bibitem{bcoq}
+F. Baccelli, G. Cohen, G. J. Olsder and J.-P. Quadrat, \emph{Synchronization and Linearity: An
+Algebra for Discrete Event Systems}, Wiley, 1992.
+
+\bibitem{bbgms}
+F. Bonomo, B. Bre\v{s}ar, L. N. Grippo, M. Milani\v{c} and M. D. Safe, Domination parameters
+with number $2$: interrelations and algorithmic consequences, \emph{Discrete Appl. Math.}
+\textbf{235} (2018), 23--50.
+
+\bibitem{bhk}
+B. Bre\v{s}ar, M. A. Henning and S. Klav\v{z}ar, On integer domination in graphs and
+Vizing-like problems, \emph{Taiwanese J. Math.} \textbf{10} (2006), 1317--1328.
+
+\bibitem{dhlf}
+G. S. Domke, S. T. Hedetniemi, R. C. Laskar and G. Fricke, Relationships between integer and
+fractional parameters of graphs, in \emph{Graph Theory, Combinatorics, and Applications},
+Vol.~1, Wiley, 1991, pp.~371--387.
+
+\bibitem{gprt}
+D. Gon\c{c}alves, A. Pinlou, M. Rao and S. Thomass\'e, The domination number of grids,
+\emph{SIAM J. Discrete Math.} \textbf{25} (2011), 1443--1453.
+
+\bibitem{hare90}
+E. O. Hare, $k$-weight domination and fractional domination of $P_m\times P_n$, \emph{Congr.
+Numer.} \textbf{78} (1990), 71--80.
+
+\bibitem{hare94}
+E. O. Hare, Fibonacci numbers and fractional domination of $P_m\times P_n$, \emph{Fibonacci
+Quart.} \textbf{32} (1994), 69--73.
+
+\bibitem{kz}
+S. Klav\v{z}ar and J. \v{Z}erovnik, Algebraic approach to fasciagraphs and rotagraphs,
+\emph{Discrete Appl. Math.} \textbf{68} (1996), 93--100.
+
+\bibitem{ll}
+J.-Y. Lee and C.-A. Liu, The integer $\{2\}$-domination number of grids, preprint, 2025,
+\url{https://arxiv.org/abs/2502.00134}.
+
+\bibitem{ls}
+M. Livingston and Q. F. Stout, Constant time computation of minimum dominating sets,
+\emph{Congr. Numer.} \textbf{105} (1994), 116--128.
+
+\bibitem{mathlib}
+The mathlib Community, The Lean mathematical library, in \emph{Proceedings of the 9th ACM
+SIGPLAN International Conference on Certified Programs and Proofs}, ACM, 2020, pp.~367--381.
+
+\bibitem{lean4}
+L. de Moura and S. Ullrich, The Lean 4 theorem prover and programming language, in
+\emph{Automated Deduction -- CADE 28}, Lecture Notes in Comput. Sci., Vol.~12699, Springer,
+2021, pp.~625--635.
+
+\bibitem{omega}
+The Omega Institute, \emph{trureturing}, software repository, issues 17651 and 17664 and pull
+request 18785, October 2026, \url{https://github.com/the-omega-institute/trureturing}.
+
+\bibitem{rt}
+M. Rao and A. Talon, The $2$-domination and Roman domination numbers of grid graphs,
+\emph{Discrete Math. Theor. Comput. Sci.} \textbf{21} (2019), no.~1, Paper~9.
+
+\end{thebibliography}
+
+\bigskip
+\noindent 2020 \emph{Mathematics Subject Classification}: Primary 05C69; Secondary 05C85, 68V20.
+
+\noindent \emph{Keywords}: integer domination, $\{k\}$-domination, grid graph, $(\min,+)$
+algebra, transfer matrix, formal proof.
+
+\end{document}
