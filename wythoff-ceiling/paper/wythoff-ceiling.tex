@@ -1,0 +1,553 @@
+\documentclass[12pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+
+\newcommand{\seqnum}[1]{\href{https://oeis.org/#1}{\underline{#1}}}
+\newcommand{\fl}[1]{\lfloor #1 \rfloor}
+\newcommand{\cl}[1]{\lceil #1 \rceil}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\D}{\mathcal{D}}
+\newcommand{\M}{\mathcal{M}}
+\newcommand{\Ws}{W^{*}}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\title{Numbers Occurring Twice in, and Missing from,\\ the Wythoff Ceiling Array}
+\author{Camden Link}
+\date{Draft of November 21, 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Kimberling's Wythoff ceiling array is obtained from a formula for the Wythoff array by
+replacing a floor with a ceiling. Unlike the Wythoff array, it contains some positive integers
+twice and misses others. In 2021 Kimberling conjectured that consecutive numbers occurring twice
+differ by $3$, $5$, $10$ or $13$, and that consecutive missing numbers differ by $2$, $3$, $5$,
+$10$ or $13$. We prove both conjectures, together with the statement, recorded without proof in
+the On-Line Encyclopedia of Integer Sequences, that no number occurs more than twice. The gap $2$
+between missing numbers occurs only once, and every other gap occurs infinitely often. We also
+determine the densities and gap frequencies of both sets, and describe both sets by Zeckendorf
+representations. The proof reduces membership in a column of the array to the position of a
+number modulo the golden ratio. The main results are formally verified in the Lean proof
+assistant.
+\end{abstract}
+
+\section{Introduction}
+
+Let $\varphi=(1+\sqrt5)/2$ and let $F(0)=0$, $F(1)=1$, $F(k+1)=F(k)+F(k-1)$ be the Fibonacci
+numbers. The Wythoff array \seqnum{A035513} is
+\[
+W(n,k)=F(k+1)\fl{n\varphi}+(n-1)F(k)\qquad(n,k\ge1).
+\]
+Each of its rows satisfies the Fibonacci recurrence, and it contains every positive integer
+exactly once \cite{morrison,kimberling95}. In February 2021 Kimberling \cite{oeis} introduced
+the \emph{Wythoff ceiling array} \seqnum{A341260},
+\[
+\Ws(n,k)=F(k+1)\cl{n\varphi}+(n-1)F(k)\qquad(n,k\ge1),
+\]
+whose corner is
+\[
+\begin{array}{rrrrrrr}
+2&4&6&10&16&26&\cdots\\
+5&9&14&23&37&60&\cdots\\
+7&12&19&31&50&81&\cdots\\
+10&17&27&44&71&115&\cdots
+\end{array}
+\]
+Each row still satisfies $\Ws(n,k+1)=\Ws(n,k)+\Ws(n,k-1)$, but the array no longer contains
+each positive integer once: $10=\Ws(1,4)=\Ws(4,1)$ occurs twice, while $1$, $3$ and $8$ do not
+occur. Kimberling recorded the two sets
+\begin{align*}
+\D&=\{10,23,26,31,44,57,60,65,68,78,\dots\}&&\text{numbers occurring twice (\seqnum{A341261}),}\\
+\M&=\{1,3,8,11,21,24,29,32,45,55,\dots\}&&\text{positive integers not occurring (\seqnum{A341262}).}
+\end{align*}
+The entries \seqnum{A341260} and \seqnum{A341261} state that no number occurs more than twice,
+without proof. They also record two conjectures:
+\begin{quote}
+(C1) consecutive terms of $\D$ differ only by $3$, $5$, $10$ or $13$;\\
+(C2) consecutive terms of $\M$ differ only by $2$, $3$, $5$, $10$ or $13$.
+\end{quote}
+As of November 2026 the entries still list both as conjectures, and we have not found them
+settled elsewhere. We call $g$ a \emph{gap} of a set $S\subseteq\Z$ if $m$ and $m+g$ are
+consecutive elements of $S$ for some $m$.
+
+\begin{theorem}\label{thm:main}
+\leavevmode
+\begin{enumerate}
+\item[(a)] No positive integer occurs at more than two positions $(n,k)$ of the array.
+\item[(b)] The gaps of $\D$ are exactly $3,5,10,13$, and each of them occurs infinitely often.
+\item[(c)] The gaps of $\M$ are exactly $2,3,5,10,13$. The gap $2$ occurs only between $1$ and
+$3$; each of the others occurs infinitely often.
+\end{enumerate}
+\end{theorem}
+
+In particular both conjectures hold, and every value they allow does occur.
+
+\begin{theorem}\label{thm:freq}
+The sets $\D$ and $\M$ each have density $\varphi^{-4}=(7-3\sqrt5)/2\approx0.1459$. In each set
+the gaps $3$, $5$, $10$, $13$ occur with relative frequencies $\varphi^{-2}$, $\varphi^{-3}$,
+$\varphi^{-4}$, $\varphi^{-3}$, that is, about $38.2\%$, $23.6\%$, $14.6\%$, $23.6\%$.
+\end{theorem}
+
+Every positive integer $m$ has a unique \emph{Zeckendorf representation}
+$m=F(i_1)+F(i_2)+\cdots+F(i_r)$ with $2\le i_1$ and $i_{s+1}\ge i_s+2$ \cite{zeckendorf}.
+
+\begin{theorem}\label{thm:zeck}
+Let $m\ge1$ have Zeckendorf representation $F(i_1)+\cdots+F(i_r)$ with $i_1<\cdots<i_r$.
+\begin{enumerate}
+\item[(a)] $m\in\D$ if and only if $r\ge2$, $i_1$ is odd and $i_2$ is even.
+\item[(b)] $m\in\M$ if and only if $m=1$, or $i_1\ge4$ is even and either $r=1$ or $i_2$ is even.
+\end{enumerate}
+\end{theorem}
+
+For example $10=F(3)+F(6)\in\D$ and $11=F(4)+F(6)\in\M$. In words: split the Fibonacci numbers
+into $2,5,13,34,\dots$ (odd index) and $1,3,8,21,\dots$ (even index); a number occurs twice when
+its smallest Zeckendorf part is of the first kind and its second smallest is of the second kind.
+
+\subsection*{Method}
+
+The key observation (Proposition~\ref{prop:col}) is that $m$ lies in column $k$ exactly when
+$m-\varphi x$ lies in the interval $\psi^k\cdot(\varphi,\varphi+1)$ for some integer $x$, where
+$\psi=1-\varphi=-1/\varphi$. These intervals are disjoint and shrink geometrically towards $0$,
+alternating sides. So whether $m$ occurs, and how often, depends only on $m$ modulo $\varphi$,
+and passing from $m$ to $m+1$ rotates the circle $\R/\varphi\Z$ by $1$. The gaps are then
+return times of this rotation to a union of infinitely many intervals accumulating at one point.
+Only the first three of these intervals have to be treated separately; the rest are handled
+together. The approach, reducing membership to the position of a point on a circle and checking
+finitely many cells by machine, is the one used in \cite{link} for intersections of Beatty
+sequences.
+
+\subsection*{Formal verification}
+
+Theorem~\ref{thm:main} is formally verified in Lean~4 \cite{lean4} with Mathlib \cite{mathlib},
+as are Proposition~\ref{prop:col}, Theorem~\ref{thm:struct}(a) and the parts of
+Theorem~\ref{thm:struct}(b),(c) used in Section~\ref{sec:gaps}. Theorems~\ref{thm:freq}
+and~\ref{thm:zeck} are proved here in the usual way and are not formalized; both were also
+checked against a direct enumeration of the array up to $2\cdot10^9$.
+Section~\ref{sec:lean} says precisely what is machine-checked. The Lean sources and the programs
+are available at \url{https://github.com/clink-bw/math-proofs}.
+
+\subsection*{Organization}
+
+Section~\ref{sec:prelim} collects facts about $\varphi$. Section~\ref{sec:circle} describes
+the columns on the circle and proves Theorems~\ref{thm:main}(a) and~\ref{thm:zeck}.
+Section~\ref{sec:gaps} proves Theorem~\ref{thm:main}(b),(c) and Theorem~\ref{thm:freq}.
+Section~\ref{sec:lean} describes the formalization, Section~\ref{sec:remarks} makes some
+remarks, and Section~\ref{sec:ai} states how AI tools were used.
+
+\section{Preliminaries}\label{sec:prelim}
+
+Throughout, $\psi=1-\varphi=-1/\varphi$, so that $\varphi\psi=-1$, $\varphi^2=\varphi+1$ and
+$|\psi|=\varphi^{-1}<1$. Binet's formula gives
+\begin{equation}\label{eq:binet}
+F(k+1)-\varphi F(k)=\psi^k\qquad(k\ge0).
+\end{equation}
+Hence each $\varphi^{-j}=|\psi|^j=(-1)^j\bigl(F(j+1)-\varphi F(j)\bigr)$ lies in $\Z+\Z\varphi$:
+\[
+\varphi^{-1}=\varphi-1,\quad \varphi^{-2}=2-\varphi,\quad \varphi^{-3}=2\varphi-3,\quad
+\varphi^{-4}=5-3\varphi,\quad \varphi^{-5}=5\varphi-8,\quad \varphi^{-6}=13-8\varphi,
+\]
+and $\varphi^{-j}=\varphi^{-j-1}+\varphi^{-j-2}$. Since $\varphi$ is irrational,
+$a+b\varphi=a'+b'\varphi$ with integers $a,b,a',b'$ forces $a=a'$ and $b=b'$.
+
+For $k\ge0$ let $I_k=\{\psi^k u:\ \varphi<u<\varphi+1\}$. As $\psi^k\varphi=-\psi^{k-1}$ and
+$\psi^k(\varphi+1)=\psi^k\varphi^2=\psi^{k-2}$,
+\begin{equation}\label{eq:Ik}
+I_k=(\varphi^{1-k},\ \varphi^{2-k})\ \text{ for $k$ even},\qquad
+I_k=(-\varphi^{2-k},\ -\varphi^{1-k})\ \text{ for $k$ odd}.
+\end{equation}
+Thus $I_1=(-\varphi,-1)$, $I_2=(\varphi^{-1},1)$, $I_3=(-\varphi^{-1},-\varphi^{-2})$,
+$I_4=(\varphi^{-3},\varphi^{-2})$, and so on. The intervals $I_k$ are pairwise disjoint; for even
+$k\ge2$ they lie in $(0,1)$ and for odd $k$ in $(-\varphi,0)$.
+
+For an integer $m$ let
+\[
+t(m)=m-\varphi\fl{m/\varphi}\in[0,\varphi),
+\]
+the position of $m$ on the circle $\R/\varphi\Z$. Then $t(m+j)\equiv t(m)+j\pmod\varphi$, and
+\begin{equation}\label{eq:irr}
+\text{if } t(m)=a+b\varphi \text{ with } a,b\in\Z, \text{ then } a=m.
+\end{equation}
+In particular $t(m)\neq0$ for $m\ne0$.
+
+\section{The columns on the circle}\label{sec:circle}
+
+It is convenient to extend the array by $\Ws(n,0)=\cl{n\varphi}$, which is the defining formula
+with $k=0$.
+
+\begin{lemma}\label{lem:row}
+For $n\ge1$ and $k\ge0$,
+\[
+\Ws(n,k+1)-\varphi\,\Ws(n,k)=\psi^{k+1}u_n,\qquad u_n=\cl{n\varphi}-(n-1)\varphi,
+\]
+and $\varphi<u_n<\varphi+1$.
+\end{lemma}
+
+\begin{proof}
+By \eqref{eq:binet} the left side is
+$\cl{n\varphi}\bigl(F(k+2)-\varphi F(k+1)\bigr)+(n-1)\bigl(F(k+1)-\varphi F(k)\bigr)
+=\cl{n\varphi}\psi^{k+1}+(n-1)\psi^k$, and $(n-1)\psi^k=-(n-1)\varphi\psi^{k+1}$. Since
+$n\varphi$ is irrational, $n\varphi<\cl{n\varphi}<n\varphi+1$, which gives the bounds on $u_n$.
+\end{proof}
+
+\begin{proposition}\label{prop:col}
+Let $m\ge1$, $k\ge1$ and $x\in\Z$. Then $m-\varphi x\in I_k$ if and only if there is $n\ge1$ with
+$\Ws(n,k)=m$ and $\Ws(n,k-1)=x$. In particular $m$ lies in column $k$ if and only if
+$m-\varphi x\in I_k$ for some integer $x$.
+\end{proposition}
+
+\begin{proof}
+One direction is Lemma~\ref{lem:row}. For the other we use induction on $k$. Let $k=1$, so
+$-\varphi<m-\varphi x<-1$, and put $n=m-x+1$. Multiplying by $\varphi$ and using
+$\varphi^2=\varphi+1$ gives $x-1<n\varphi<x$, so $\cl{n\varphi}=x=\Ws(n,0)$ and
+$\Ws(n,1)=\cl{n\varphi}+n-1=m$. Also $n\ge1$: if $x\le0$ this is clear, and if $x\ge1$ then
+$m>\varphi(x-1)\ge x-1$. Now let $k\ge2$. By \eqref{eq:Ik}, $|m-\varphi x|<1$, so
+$\varphi x>m-1\ge0$ and $x\ge1$. Moreover
+$x-\varphi(m-x)=-\varphi(m-\varphi x)\in-\varphi I_k=I_{k-1}$. By induction there is $n\ge1$ with
+$\Ws(n,k-1)=x$ and $\Ws(n,k-2)=m-x$, and then $\Ws(n,k)=\Ws(n,k-1)+\Ws(n,k-2)=m$.
+\end{proof}
+
+Since $\cl{(n+1)\varphi}\ge\cl{n\varphi}+1$, each column is strictly increasing in $n$. So a
+number occurs at most once in each column, and the number of times it occurs is the number of
+columns containing it.
+
+\begin{corollary}\label{cor:t}
+Let $m\ge1$ and $t=t(m)$. For $k\ge1$, $m$ lies in column $k$ if and only if $t\in I_k$ (for
+even $k$) or $t-\varphi\in I_k$ (for odd $k$).
+\end{corollary}
+
+\begin{proof}
+Each $m-\varphi x$ equals $t+\varphi(\fl{m/\varphi}-x)$, and all $I_k$ lie in $(-\varphi,1)$.
+As $0\le t<\varphi$, the only values in $(-\varphi,1)$ are $t\ge0$ and $t-\varphi<0$; the first
+can lie only in an even $I_k$ and the second only in an odd one.
+\end{proof}
+
+\begin{theorem}\label{thm:struct}
+Let $m\ge1$ and $t=t(m)$, and put
+\[
+T=\bigcup_{j\ge1}\bigl(\varphi^{-2j-1},\ \varphi^{-2j}\bigr),\qquad
+T'=\bigcup_{j\ge1}\bigl[\varphi^{-2j-1},\ \varphi^{-2j}\bigr).
+\]
+\begin{enumerate}
+\item[(a)] $m$ occurs at most twice in the array.
+\item[(b)] $m\in\D$ if and only if $m$ lies in column $1$ and in some even column $k\ge4$, if and
+only if $t\in T$.
+\item[(c)] $m\in\M$ if and only if $t=1$ (that is, $m=1$) or $\varphi-t\in T'$.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+By Corollary~\ref{cor:t} the number of occurrences of $m$ is
+$[t\in E]+[t\in O]$, where
+\begin{align*}
+E&=\bigcup_{k\ge2\text{ even}}I_k=\bigcup_{j\ge1}(\varphi^{1-2j},\ \varphi^{2-2j})\subset(0,1),\\
+O&=\bigcup_{k\text{ odd}}(I_k+\varphi)=(0,\varphi^{-1})\cup
+\bigcup_{j\ge1}(\varphi-\varphi^{1-2j},\ \varphi-\varphi^{-2j}).
+\end{align*}
+The last union lies in $(1,\varphi)$. Since the $I_k$ are disjoint, each of $E$ and $O$
+contributes at most one column, which proves (a). For (b), $E\cap O=E\cap(0,\varphi^{-1})$,
+which is $T$; there $m$ lies in column $1$ (from $I_1+\varphi=(0,\varphi^{-1})$) and in column
+$2j+2$ (from $I_{2j+2}$). For (c), $E\cup O$ contains $(0,1)$ except $\varphi^{-1}$. By
+\eqref{eq:irr}, $t=\varphi^{-1}=\varphi-1$ would give $m=-1$; hence $t\ge1$, and $t=1$ gives
+$m=1$, which is indeed missing. For $1<t<\varphi$ we have $t\notin E$, and $t\notin O$ if and
+only if $\varphi-t$, which lies in $(0,\varphi^{-1})$, avoids every
+$(\varphi^{-2j},\varphi^{1-2j})$, that is, $\varphi-t\in\bigcup_{j\ge1}[\varphi^{-2j-1},\varphi^{-2j}]$.
+The right endpoints do not occur: $\varphi-t=\varphi^{-2j}$ would give
+$t=\varphi-F(2j+1)+F(2j)\varphi$ and $m=-F(2j+1)$ by \eqref{eq:irr}.
+\end{proof}
+
+\begin{remark}
+The left endpoints of $T'$ do occur. By \eqref{eq:binet},
+$F(i)=\varphi F(i-1)+\psi^{i-1}$, so $t(F(2j+2))=\varphi-\varphi^{-2j-1}$ and the even-indexed
+Fibonacci numbers $3,8,21,55,\dots$ are missing. Likewise $t(F(2j+1))=\varphi^{-2j}$ is an
+endpoint of $T$, and the odd-indexed Fibonacci numbers $2,5,13,\dots$ occur exactly once.
+\end{remark}
+
+\begin{proof}[Proof of Theorem~\ref{thm:zeck}]
+Call a finite set $J$ of nonnegative integers \emph{sparse} if it contains no two consecutive
+integers. For sparse $J$, the sum $\Sigma(J)=\sum_{j\in J}\psi^j$ lies strictly between the sum
+over all odd $j$, which is $\psi/(1-\psi^2)=-1$, and the sum over all even $j$, which is
+$1/(1-\psi^2)=\varphi$; here $1-\psi^2=-\psi$. If moreover $0\in J$, then
+$\Sigma(J)=1+\psi^2\Sigma(J')$ with $J'$ sparse, so $\Sigma(J)\in(\varphi^{-1},\varphi)$.
+
+Let $m=F(i_1)+\cdots+F(i_r)$. By \eqref{eq:binet},
+\[
+m-\varphi\sum_s F(i_s-1)=\sum_s\psi^{i_s-1}=:\sigma=\psi^{i_1-1}\tau,\qquad
+\tau=\sum_s\psi^{i_s-i_1}\in(\varphi^{-1},\varphi).
+\]
+Since $\sigma=\psi\,\Sigma(\{i_s-2\})\in\psi\cdot(-1,\varphi)=(-1,\varphi^{-1})$, we have
+$t(m)=\sigma$ if $\sigma>0$ and $t(m)=\sigma+\varphi$ if $\sigma<0$. If $r=1$ then $\tau=1$.
+If $r\ge2$, let $d=i_2-i_1\ge2$; then $\tau-1=\psi^d\rho$ with $\rho\in(\varphi^{-1},\varphi)$,
+so $\tau<1$ if $d$ is odd and $\tau>1$ if $d$ is even.
+
+(a) As $T\subset(0,\varphi^{-2})$ and $\sigma+\varphi>\varphi^{-1}$, membership in $\D$ requires
+$\sigma>0$, that is, $i_1=2a+1$ odd, with $a\ge1$. Then $t=\varphi^{-2a}\tau$ lies in
+$(\varphi^{-2a-1},\varphi^{1-2a})$, which meets $T$ only in $(\varphi^{-2a-1},\varphi^{-2a})$. So
+$m\in\D$ if and only if $\tau<1$, that is, $r\ge2$ and $d$ odd, that is, $i_2$ even.
+
+(b) If $\sigma>0$ then $t<\varphi^{-1}$ and $m\notin\M$ by Theorem~\ref{thm:struct}(c). So let
+$i_1=2a$ be even; then $\varphi-t=-\sigma=\varphi^{1-2a}\tau$. If $a=1$ this lies in
+$(\varphi^{-2},1)$, which misses $T'$, and it equals $\varphi^{-1}$ (that is, $t=1$) exactly when
+$\tau=1$, that is, $m=F(2)=1$. If $a\ge2$, then $t\ne1$ and $\varphi-t\in(\varphi^{-2a},\varphi^{2-2a})$,
+which meets $T'$ only in $[\varphi^{1-2a},\varphi^{2-2a})$. So $m\in\M$ if and only if
+$\tau\ge1$, that is, $r=1$ or $d$ even, that is, $r=1$ or $i_2$ even.
+\end{proof}
+
+\section{The gaps}\label{sec:gaps}
+
+By Theorem~\ref{thm:struct}, a gap of $\D$ is a return time of the rotation
+$t\mapsto t+1\pmod\varphi$ to $T$, and similarly for $\M$. Table~\ref{tab:rot} lists
+$\rho_j=j-\varphi\fl{j/\varphi}$, so that $t(m+j)$ is $t(m)+\rho_j$ or $t(m)+\rho_j-\varphi$.
+
+\begin{table}[ht]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{clc@{\qquad}clc}
+\toprule
+$j$ & $\rho_j$ & $\approx$ & $j$ & $\rho_j$ & $\approx$ \\
+\midrule
+$1$ & $1$ & 1.000 & $8$ & $8-4\varphi$ & 1.528 \\
+$2$ & $2-\varphi$ & 0.382 & $9$ & $9-5\varphi$ & 0.910 \\
+$3$ & $3-\varphi$ & 1.382 & $10$ & $10-6\varphi$ & 0.292 \\
+$4$ & $4-2\varphi$ & 0.764 & $11$ & $11-6\varphi$ & 1.292 \\
+$5$ & $5-3\varphi$ & 0.146 & $12$ & $12-7\varphi$ & 0.674 \\
+$6$ & $6-3\varphi$ & 1.146 & $13$ & $13-8\varphi$ & 0.056 \\
+$7$ & $7-4\varphi$ & 0.528 & & & \\
+\bottomrule
+\end{tabular}
+\caption{The rotation amounts $\rho_j=j\bmod\varphi$. Note $\rho_2=\varphi^{-2}$,
+$\rho_3=\varphi-\varphi^{-3}$, $\rho_5=\varphi^{-4}$, $\rho_8=\varphi-\varphi^{-5}$,
+$\rho_{10}=2\varphi^{-4}$, $\rho_{13}=\varphi^{-6}$.}
+\label{tab:rot}
+\end{table}
+
+\begin{lemma}\label{lem:shift}
+For $m\in\Z$ and $i\ge0$, $t(m+F(i+1))\equiv t(m)+\psi^i\pmod\varphi$.
+\end{lemma}
+
+\begin{proof}
+By \eqref{eq:binet}, $(m+F(i+1))-\varphi(\fl{m/\varphi}+F(i))=t(m)+\psi^i$.
+\end{proof}
+
+Since $\psi^i\to0$ and $F(i+1)\to\infty$, if $t(m)$ lies in an open interval $C\subset(0,\varphi)$
+then $t(m')\in C$ for infinitely many $m'>m$.
+
+\input{tables}
+
+\begin{proof}[Proof of Theorem~\ref{thm:main}(b)]
+Let $m\in\D$ and $t=t(m)\in T$. Since $T\cap[\varphi^{-6},\varphi)=I_4\cup I_6$, and
+$t\ne\varphi^{-3}+\varphi^{-5}=7\varphi-11$ by \eqref{eq:irr}, $t$ lies in one of the five cells
+of Table~\ref{tab:twice}. For each cell and each $j$, the table records where $t(m+j)$ lies,
+computed from Table~\ref{tab:rot}. By Theorem~\ref{thm:struct}(b), $m+j\in\D$ exactly when
+$t(m+j)\in T$. The entries a, b, c place $t(m+j)$ outside $T$, which lies in $(0,\varphi^{-2})$
+and avoids $[\varphi^{-4},\varphi^{-3}]$ and $[\varphi^{-6},\varphi^{-5}]$. A bold $4$ or $6$
+places $t(m+j)$ in $I_4$ or $I_6$, which lie in $T$. For example, if $t$ is in the first cell then
+$t(m+3)=t-\varphi^{-3}\in(\varphi^{-5},\varphi^{-4})=I_6$.
+
+In the third cell, $t(m+3)=t-\varphi^{-3}$ lies in $(0,\varphi^{-6}]$, which meets both $T$ and its
+complement. If $m+3\in\D$ the gap is $3$. Otherwise the remaining entries show that $m+13$ is the
+next element: $t(m+13)=t+\varphi^{-6}\in(\varphi^{-3}+\varphi^{-6},\varphi^{-3}+2\varphi^{-6}]\subset I_4$.
+Hence the next element of $\D$ after $m$ is $m+g$ with $g\in\{3,5,10,13\}$.
+
+In the first, second and fourth cells, and in $I_8=(\varphi^{-7},\varphi^{-6})\subset T$ inside the
+fifth, the gap is $3$, $13$, $5$ and $10$ respectively at every point. These cells contain $t(23)$,
+$t(44)$, $t(26)$ and $t(68)$, which are approximately $0.348$, $0.313$, $0.111$ and $0.043$. By
+Lemma~\ref{lem:shift} each gap occurs infinitely often.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:main}(c)]
+Let $m\in\M$ and $v=\varphi-t(m)$. By Theorem~\ref{thm:struct}(c), either $m=1$ and
+$v=\varphi^{-1}$, or $v\in T'$. In the second case $v$ lies in one of the last four cells of
+Table~\ref{tab:missing}, since $T'\cap[\varphi^{-6},\varphi)=[\varphi^{-3},\varphi^{-2})\cup
+[\varphi^{-5},\varphi^{-4})$, $2\varphi^{-4}=\varphi^{-3}+\varphi^{-6}$, and
+$v\ne2\varphi^{-4}$ because $t(m)=7\varphi-10$ would give $m=-10$. An entry $k$ in the table means
+that $m+j$ lies in column $k$, by Corollary~\ref{cor:t}, so $m+j\notin\M$. An entry $\ast$ means
+that $\varphi-t(m+j)$ lies in $[\varphi^{-3},\varphi^{-2})$, $[\varphi^{-5},\varphi^{-4})$ or
+$[\varphi^{-7},\varphi^{-6})$, all contained in $T'$, so $m+j\in\M$.
+
+In the third row, $\varphi-t(m+10)=v-2\varphi^{-4}\in(0,\varphi^{-5})$. If $m+10\in\M$ the gap is
+$10$; otherwise it is $13$, as $\varphi-t(m+13)=v-\varphi^{-6}\in(\varphi^{-3},\varphi^{-2})$.
+The gap $2$ arises only in the first row, that is, for $m=1$. The gaps $5$, $3$, $10$ and $13$
+occur at every point of $(\varphi^{-3},2\varphi^{-4})$, of $(\varphi^{-5},\varphi^{-4})$, of
+$2\varphi^{-4}+(\varphi^{-7},\varphi^{-6})$ and of $2\varphi^{-4}+(\varphi^{-6},\varphi^{-5})$
+respectively; these contain $\varphi-t(m)$ for $m=24$, $29$, $66$ and $32$. By
+Lemma~\ref{lem:shift} each of them occurs infinitely often.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:freq}]
+The sequence $t(m)=\varphi\{m/\varphi\}$ is equidistributed in $[0,\varphi)$ by Weyl's theorem
+\cite{weyl}. The sets $T$, $T'$ and the cells above are unions of intervals whose boundary is a
+countable set with one accumulation point, so their indicator functions are Riemann integrable,
+and the proportion of $m\le N$ with $t(m)$ in such a set tends to its length divided by $\varphi$
+\cite{kn}. Since $\varphi^{-2j}-\varphi^{-2j-1}=\varphi^{-2j-2}$,
+\[
+|T|=|T'|=\sum_{j\ge1}\varphi^{-2j-2}=\frac{\varphi^{-4}}{1-\varphi^{-2}}=\varphi^{-3},
+\]
+which gives density $\varphi^{-4}$ for both sets. For $\D$, the gap is $5$ on $I_6$ (length
+$\varphi^{-6}$); $10$ on $T\cap(0,\varphi^{-6})$ (length $\sum_{j\ge3}\varphi^{-2j-2}=\varphi^{-7}$);
+$3$ on $\{t\in I_4:\ t-\varphi^{-3}\in T\}$ (length $|T\cap(0,\varphi^{-4})|=\varphi^{-5}$); and
+$13$ on the rest of $I_4$ (length $\varphi^{-4}-\varphi^{-5}=\varphi^{-6}$). Dividing by
+$|T|=\varphi^{-3}$ gives the frequencies $\varphi^{-3},\varphi^{-4},\varphi^{-2},\varphi^{-3}$.
+For $\M$, the gap is $5$ on $[\varphi^{-3},2\varphi^{-4})$ (length $\varphi^{-6}$); $3$ on
+$[\varphi^{-5},\varphi^{-4})$ and on $T'\cap(0,\varphi^{-6})$ (total length
+$\varphi^{-6}+\varphi^{-7}=\varphi^{-5}$); $10$ on $\{v\in(2\varphi^{-4},\varphi^{-2}):\ v-2\varphi^{-4}\in T'\}$
+(length $\varphi^{-7}$); and $13$ on the rest of $(2\varphi^{-4},\varphi^{-2})$ (length
+$\varphi^{-5}-\varphi^{-7}=\varphi^{-6}$). The frequencies are the same.
+\end{proof}
+
+A direct enumeration up to $2\cdot10^9$ gives $291{,}796{,}059$ elements of $\D$ and
+$291{,}796{,}079$ of $\M$, and relative gap frequencies agreeing with Theorem~\ref{thm:freq} to
+six decimal places.
+
+\section{Formal verification}\label{sec:lean}
+
+\begin{sloppypar}
+The following statements are proved in Lean~4 with Mathlib, in the namespace
+\texttt{WythoffCeiling}. The development defines the array as a function \texttt{W} from pairs of
+natural numbers to integers by the formula above, $\D$ as the set of integers
+$m$ with $\texttt{W}\,n\,k=m=\texttt{W}\,n'\,k'$ for two different pairs with
+$n,k,n',k'\ge1$, and $\M$ as the set of positive integers not of the form $\texttt{W}\,n\,k$
+with $n,k\ge1$. As in \cite{link}, \texttt{IsGap S g} means that some $m\in S$ has $m+g\in S$ and
+$m+j\notin S$ for $0<j<g$.
+\end{sloppypar}
+
+\begin{itemize}
+\item \texttt{at\_most\_twice}: Theorem~\ref{thm:main}(a).
+\item \texttt{isGap\_twice\_iff}: for $g>0$, \texttt{IsGap} $\D$ $g$ holds if and only if
+$g\in\{3,5,10,13\}$; \texttt{twice\_gap\_infinitely\_often}: for each such $g$ and each bound $B$
+there is $m>B$ in $\D$ whose successor in $\D$ is $m+g$. Together, Theorem~\ref{thm:main}(b).
+\item \texttt{isGap\_missing\_iff}, \texttt{missing\_gap\_infinitely\_often} and
+\texttt{missing\_two\_apart} (if $m$ and $m+2$ are both in $\M$ then $m=1$): together,
+Theorem~\ref{thm:main}(c).
+\item \texttt{inCol\_iff}: Proposition~\ref{prop:col}; \texttt{colR\_iff}:
+Corollary~\ref{cor:t}; \texttt{mem\_twice\_iff} and \texttt{DR\_iff}: the first equivalence in
+Theorem~\ref{thm:struct}(b).
+\item \texttt{corner} and \texttt{ten\_mem\_twice}: the corner of the array displayed in
+\seqnum{A341260}, and $10\in\D$, as checks that the definitions match the entries.
+\end{itemize}
+
+The proof follows Sections~\ref{sec:circle} and~\ref{sec:gaps}, except that the full
+descriptions of $\D$ and $\M$ by $T$ and $T'$ are not formalized; Lean uses only what the cells
+need, namely the intervals $I_1,\dots,I_9$ explicitly and, for the remaining columns, bounds
+such as $I_k\subset(0,\varphi^{-6})$ for even $k\ge8$ and $I_k\subset(-\varphi^{-9},0)$ for odd
+$k\ge11$, which follow from $|\psi^k|\le|\psi|^K$ for $k\ge K$.
+A program computes, for each cell and each $j$, the integer $c$ with
+$t(m+j)=t(m)+j-c\varphi$ on the whole cell, and the lemma that decides membership of $m+j$; the
+same data produce Tables~\ref{tab:twice} and~\ref{tab:missing}. Lean checks every resulting
+inequality by linear arithmetic over the reals, using only the enclosure
+$1.6180339<\varphi<1.618034$; the irrationality of $\varphi$ (in Mathlib) is used for the
+boundary points excluded via \eqref{eq:irr}. An error in the program can therefore make a proof
+fail but cannot make a false statement accepted. The proofs use no axioms beyond the three
+standard ones of Lean's classical logic.
+
+Not formalized: Theorems~\ref{thm:freq} and~\ref{thm:zeck}, and the full form of
+Theorem~\ref{thm:struct}(b),(c). The array was also enumerated directly from its definition up to
+$2\cdot10^9$, computing $\cl{n\varphi}$ exactly in integer arithmetic. The results agree with
+Theorems~\ref{thm:main}, \ref{thm:freq} and~\ref{thm:zeck} on that range, and with the data in the
+three OEIS entries.
+
+\section{Remarks}\label{sec:remarks}
+
+\begin{enumerate}
+\item The entry \seqnum{A341260} notes that row $n$ of the ceiling array is a row of the extended
+Wythoff array. We have not used this; Proposition~\ref{prop:col} plays the corresponding role.
+\item By Theorem~\ref{thm:zeck}, membership in $\D$ and in $\M$ is a regular condition on
+Zeckendorf representations, so both sets are Fibonacci-automatic. Statements such as
+Theorem~\ref{thm:main}(b),(c) are then expressible in the first-order theory decided by Walnut
+\cite{mousavi,shallitbook}, which Shallit \cite{shallit25} has used for related arrays. We have not
+attempted such a proof; the argument here is independent of that approach.
+\item The same analysis applies to the Wythoff array itself. There Lemma~\ref{lem:row} holds with
+$\fl{n\varphi}$ in place of $\cl{n\varphi}$, so $u_n\in(\varphi-1,\varphi)$ and $I_k$ is replaced by
+$\psi^k\cdot(\varphi-1,\varphi)$. One checks in the same way that the analogues of $E$ and $O$ are
+disjoint and cover $(0,\varphi)$ apart from countably many points that are not of the form $t(m)$
+with $m\ge1$, which recovers the fact that every positive integer occurs exactly once. The
+ceiling shifts the window by one unit of $\varphi$, and this creates both the overlaps and the
+holes.
+\end{enumerate}
+
+\section{Use of AI tools}\label{sec:ai}
+
+This work was carried out with an AI system, Claude (Anthropic), under the direction of the
+author. The AI system carried out the literature search, found the proofs, wrote the Lean
+formalization and all computer programs, and wrote the text of this draft. The author directed
+the work and chose among the options presented. The statements listed in
+Section~\ref{sec:lean} as formalized have been checked by Lean; the remaining arguments have been
+checked by exact computation as described there but have not yet been reviewed by a
+mathematician. The literature search is recorded in the repository.
+
+\begin{thebibliography}{99}
+
+\bibitem{kimberling95}
+C. Kimberling, The Zeckendorf array equals the Wythoff array, \emph{Fibonacci Quart.}
+\textbf{33} (1995), 3--8.
+
+\bibitem{kn}
+L. Kuipers and H. Niederreiter, \emph{Uniform Distribution of Sequences}, Wiley, 1974.
+
+\bibitem{link}
+C. Link, Gaps in the intersection of two Beatty sequences: three conjectures of Kimberling,
+draft, 2026, \url{https://github.com/clink-bw/math-proofs}.
+
+\bibitem{mathlib}
+The mathlib Community, The Lean mathematical library, in \emph{Proceedings of the 9th ACM
+SIGPLAN International Conference on Certified Programs and Proofs}, ACM, 2020, pp.~367--381.
+
+\bibitem{lean4}
+L. de Moura and S. Ullrich, The Lean 4 theorem prover and programming language, in
+\emph{Automated Deduction -- CADE 28}, Lecture Notes in Comput. Sci., Vol.~12699, Springer,
+2021, pp.~625--635.
+
+\bibitem{morrison}
+D. R. Morrison, A Stolarsky array of Wythoff pairs, in \emph{A Collection of Manuscripts Related
+to the Fibonacci Sequence}, Fibonacci Association, 1980, pp.~134--136.
+
+\bibitem{mousavi}
+H. Mousavi, Automatic theorem proving in Walnut, preprint, 2016,
+\url{https://arxiv.org/abs/1603.06017}.
+
+\bibitem{shallitbook}
+J. Shallit, \emph{The Logical Approach to Automatic Sequences: Exploring Combinatorics on Words
+with Walnut}, London Math. Soc. Lecture Note Ser., Vol.~482, Cambridge University Press, 2022.
+
+\bibitem{shallit25}
+J. Shallit, An ``experimental mathematics'' approach to Stolarsky interspersions via automata
+theory, preprint, 2025, \url{https://arxiv.org/abs/2502.03312}.
+
+\bibitem{oeis}
+N. J. A. Sloane et al., The On-Line Encyclopedia of Integer Sequences, 2026,
+\url{https://oeis.org}.
+
+\bibitem{weyl}
+H. Weyl, \"Uber die Gleichverteilung von Zahlen mod.\ Eins, \emph{Math. Ann.} \textbf{77}
+(1916), 313--352.
+
+\bibitem{zeckendorf}
+E. Zeckendorf, Repr\'esentation des nombres naturels par une somme de nombres de Fibonacci ou de
+nombres de Lucas, \emph{Bull. Soc. Roy. Sci. Li\`ege} \textbf{41} (1972), 179--182.
+
+\end{thebibliography}
+
+\bigskip
+\noindent 2020 \emph{Mathematics Subject Classification}: Primary 11B39; Secondary 11B83, 11J71,
+68V20.
+
+\noindent \emph{Keywords}: Wythoff array, Fibonacci numbers, Zeckendorf representation, golden
+ratio, rotation, formal proof.
+
+\begin{sloppypar}
+\noindent (Concerned with sequences \seqnum{A000045}, \seqnum{A001950}, \seqnum{A035513},
+\seqnum{A341260}, \seqnum{A341261} and \seqnum{A341262}.)
+\end{sloppypar}
+
+\end{document}
