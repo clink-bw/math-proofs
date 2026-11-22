@@ -14,7 +14,8 @@ The input is the output of fast.c with word output switched on.  For each height
    the lengthened pattern already occurs in the original), checks that the block has the right
    weight, and checks several lengthened patterns directly as well;
 3. confirms that the patterns and their lengthenings together cover every n >= 1 (it finds a
-   block length ell and ell consecutive lengths whose patterns all contain such a block).
+   block length ell such that every residue class modulo ell contains the length of a pattern
+   with a repeatable block of ell columns).
 
 So for every n there is a valid pattern of weight g(n), where g is fast.c's value for n < N + p
 and is continued by g(n + p) = g(n) + q.  This is the upper bound for all n; only the lower
@@ -110,26 +111,36 @@ def check(path, pictures):
                 assert len(longer) == n + k * ell and valid(m, longer)
                 assert weight(m, longer) == g(n + k * ell), (m, n, k)
             fam.setdefault(ell, set()).add(n)
-    # If ell consecutive lengths a, ..., a + ell - 1 all have a repeatable block of ell columns,
-    # then every n >= a is covered; the listed patterns cover n < a.
+    # If, for some ell, every residue class modulo ell contains a length n0 whose pattern has a
+    # repeatable block of ell columns, then every n beyond the listed patterns is n0 + k * ell
+    # for such an n0, so every n >= 1 is covered.
     cover = None
     for ell in sorted(fam):
-        for a in sorted(fam[ell]):
-            if all(a + t in fam[ell] for t in range(ell)):
-                if cover is None or a < cover[1]:
-                    cover = (ell, a)
-                break
-    assert cover is not None, {ell: sorted(v) for ell, v in fam.items()}
-    ell, a = cover
+        first = {}
+        for n0 in sorted(fam[ell]):
+            first.setdefault(n0 % ell, n0)
+        if len(first) == ell:
+            cover = (ell, first)
+            break
+    if cover is None:
+        best = max(fam, key=lambda e: len({n0 % e for n0 in fam[e]}) / e) if fam else None
+        missing = sorted(set(range(best)) - {n0 % best for n0 in fam[best]}) if best else []
+        print(f"m={m}: {len(words)} patterns valid with the claimed weights (n <= {wmax}); "
+              f"repeatable blocks of {best} columns found, but not yet for the residues "
+              f"{missing} modulo {best}: longer patterns are needed to cover every n")
+        return
+    ell, first = cover
+    a = max(first.values())
     cols = words[a][1]
     for i in range(0, a - ell - 1):
         if cols[i] == cols[i + ell] and cols[i + 1] == cols[i + ell + 1]:
             if weight(m, cols[i + 1:i + ell + 1]) * p == q * ell:
                 shown = cols[i + 1:i + ell + 1]
                 break
-    print(f"m={m}: {len(words)} patterns valid with the claimed weights; each of the lengths "
-          f"{a}..{a + ell - 1} has a repeatable block of {ell} columns, so every n >= 1 is "
-          f"covered: gamma(n) <= g(n) for all n, with g(n+{p}) = g(n)+{q} beyond n = {N}")
+    print(f"m={m}: {len(words)} patterns valid with the claimed weights; every residue modulo "
+          f"{ell} has a pattern of length at most {a} with a repeatable block of {ell} columns, "
+          f"so every n >= 1 is covered: gamma(n) <= g(n) for all n, with g(n+{p}) = g(n)+{q} "
+          f"beyond n = {N}")
     if pictures:
         print(f"  a repeatable block ({len(shown)} columns, weight {weight(m, shown)}):")
         print("    " + picture(m, shown).replace("\n", "\n    "))
