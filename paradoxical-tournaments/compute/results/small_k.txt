@@ -1,0 +1,46 @@
+# Sanity runs: k = 1, 2, 3 on small cyclic groups
+HIT Z3 k=1 S={1}
+RESULT group=Z3 n=3 k=1 classes_of_k_sets=1 connection_sets_tested=1 (2^0, 1 in S) k_paradoxical=1 set_checks=1 seconds=0.00 threads=8
+HIT Z5 k=1 S={1,3}
+HIT Z5 k=1 S={1,2}
+RESULT group=Z5 n=5 k=1 classes_of_k_sets=1 connection_sets_tested=2 (2^1, 1 in S) k_paradoxical=2 set_checks=2 seconds=0.00 threads=8
+HIT Z7 k=1 S={1,4,5}
+HIT Z7 k=1 S={1,2,4}
+HIT Z7 k=1 S={1,3,5}
+HIT Z7 k=1 S={1,2,3}
+RESULT group=Z7 n=7 k=1 classes_of_k_sets=1 connection_sets_tested=4 (2^2, 1 in S) k_paradoxical=4 set_checks=4 seconds=0.00 threads=8
+RESULT group=Z3 n=3 k=2 classes_of_k_sets=1 connection_sets_tested=1 (2^0, 1 in S) k_paradoxical=0 set_checks=1 seconds=0.00 threads=8
+RESULT group=Z5 n=5 k=2 classes_of_k_sets=2 connection_sets_tested=2 (2^1, 1 in S) k_paradoxical=0 set_checks=3 seconds=0.00 threads=8
+HIT Z7 k=2 S={1,2,4}
+RESULT group=Z7 n=7 k=2 classes_of_k_sets=3 connection_sets_tested=4 (2^2, 1 in S) k_paradoxical=1 set_checks=9 seconds=0.00 threads=8
+HIT Z9 k=2 S={1,5,6,7}
+HIT Z9 k=2 S={1,2,3,5}
+HIT Z9 k=2 S={1,4,6,7}
+HIT Z9 k=2 S={1,2,4,6}
+HIT Z9 k=2 S={1,3,4,7}
+RESULT group=Z9 n=9 k=2 classes_of_k_sets=4 connection_sets_tested=8 (2^3, 1 in S) k_paradoxical=5 set_checks=28 seconds=0.00 threads=8
+HIT Z11 k=2 S={1,6,7,8,9}
+HIT Z11 k=2 S={1,2,4,5,8}
+HIT Z11 k=2 S={1,3,4,5,9}
+HIT Z11 k=2 S={1,5,7,8,9}
+HIT Z11 k=2 S={1,2,5,7,8}
+HIT Z11 k=2 S={1,2,3,5,7}
+HIT Z11 k=2 S={1,4,6,8,9}
+HIT Z11 k=2 S={1,2,4,6,8}
+HIT Z11 k=2 S={1,2,3,4,6}
+HIT Z11 k=2 S={1,2,3,6,7}
+HIT Z11 k=2 S={1,3,6,7,9}
+RESULT group=Z11 n=11 k=2 classes_of_k_sets=5 connection_sets_tested=16 (2^4, 1 in S) k_paradoxical=11 set_checks=70 seconds=0.00 threads=8
+RESULT group=Z3 n=3 k=3 classes_of_k_sets=1 connection_sets_tested=1 (2^0, 1 in S) k_paradoxical=0 set_checks=1 seconds=0.00 threads=8
+RESULT group=Z5 n=5 k=3 classes_of_k_sets=2 connection_sets_tested=2 (2^1, 1 in S) k_paradoxical=0 set_checks=2 seconds=0.00 threads=8
+RESULT group=Z7 n=7 k=3 classes_of_k_sets=5 connection_sets_tested=4 (2^2, 1 in S) k_paradoxical=0 set_checks=5 seconds=0.00 threads=8
+RESULT group=Z9 n=9 k=3 classes_of_k_sets=10 connection_sets_tested=8 (2^3, 1 in S) k_paradoxical=0 set_checks=15 seconds=0.00 threads=8
+RESULT group=Z11 n=11 k=3 classes_of_k_sets=15 connection_sets_tested=16 (2^4, 1 in S) k_paradoxical=0 set_checks=33 seconds=0.00 threads=8
+RESULT group=Z13 n=13 k=3 classes_of_k_sets=22 connection_sets_tested=32 (2^5, 1 in S) k_paradoxical=0 set_checks=111 seconds=0.00 threads=8
+RESULT group=Z15 n=15 k=3 classes_of_k_sets=31 connection_sets_tested=64 (2^6, 1 in S) k_paradoxical=0 set_checks=273 seconds=0.00 threads=8
+RESULT group=Z17 n=17 k=3 classes_of_k_sets=40 connection_sets_tested=128 (2^7, 1 in S) k_paradoxical=0 set_checks=687 seconds=0.00 threads=8
+HIT Z19 k=3 S={1,4,5,6,7,9,11,16,17}
+RESULT group=Z19 n=19 k=3 classes_of_k_sets=51 connection_sets_tested=256 (2^8, 1 in S) k_paradoxical=1 set_checks=1707 seconds=0.00 threads=8
+RESULT group=Z21 n=21 k=3 classes_of_k_sets=64 connection_sets_tested=512 (2^9, 1 in S) k_paradoxical=0 set_checks=4534 seconds=0.00 threads=8
+HIT Z23 k=3 S={1,2,3,4,6,8,9,12,13,16,18}
+RESULT group=Z23 n=23 k=3 classes_of_k_sets=77 connection_sets_tested=1024 (2^10, 1 in S) k_paradoxical=1 set_checks=10993 seconds=0.00 threads=8

@@ -5,7 +5,7 @@ This file shares no code with search.c. It builds each tournament explicitly and
 EVERY k-set of players (no symmetry, no translation classes, no ordering tricks): a k-set is
 dominated when the players beating all of it form a nonempty set.
 
-Run from this directory after ./run_all.sh (it calls ./search and reads results/*.log):
+Run from this directory after ./run_all.sh (it calls ./search and reads results/*.txt):
     python3 check.py
 It prints one line per check and ends with "ALL CHECKS PASSED" or stops at the first failure.
 """
@@ -239,10 +239,10 @@ def check_logged_hits():
     """Every k=4 hit printed in the logs must pass the full check."""
     hits = []
     for fn in sorted(os.listdir(os.path.join(HERE, "results"))):
-        if not fn.endswith(".log"):
+        if not fn.endswith(".txt"):
             continue
         for line in open(os.path.join(HERE, "results", fn)):
-            m = re.match(r"HIT Z(\d+) k=4 S=\{([0-9,]*)\}", line)
+            m = re.match(r"HIT Z(\d+)(?:\(table\))? k=4 S=\{([0-9,]*)\}", line)
             if m:
                 hits.append((int(m.group(1)), [int(t) for t in m.group(2).split(",")]))
             elif line.startswith("HIT") and " k=4 " in line:
@@ -253,11 +253,11 @@ def check_logged_hits():
         for h in small:
             print("   ", h)
     ok(f"logged k=4 hits on fewer than 67 players: {len(small)}")
-    h67 = [S for n, S in hits if n == 67]
+    h67 = sorted({tuple(S) for n, S in hits if n == 67})
     for S in h67:
         if not is_paradoxical(circulant(67, S), 4):
             fail(f"logged hit on Z_67 is not 4-paradoxical: {S}")
-    ok(f"all {len(h67)} logged 4-paradoxical circulants on Z_67 pass the full check")
+    ok(f"all {len(h67)} distinct 4-paradoxical circulant connection sets logged for Z_67 pass the full check")
     # group them up to multipliers x -> u x (u a unit mod 67)
     orbits = []
     for S in h67:
@@ -275,9 +275,9 @@ def check_logged_hits():
 
 def check_nearmiss():
     """Recount, from scratch, the example set reported for each near-miss minimum."""
-    fn = os.path.join(HERE, "results", "nearmiss_k4.log")
+    fn = os.path.join(HERE, "results", "nearmiss_k4.txt")
     if not os.path.exists(fn):
-        print("skip near-miss check (results/nearmiss_k4.log not present)")
+        print("skip near-miss check (results/nearmiss_k4.txt not present)")
         return
     for line in open(fn):
         m = re.match(r"MINEXAMPLE group=(\S+) n=(\d+) k=4 undominated_classes=(\d+) S=\{(.*)\}", line)
