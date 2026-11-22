@@ -34,7 +34,7 @@ are true; this was first shown in an online repository of machine-checked proofs
 independent proofs. Our main results are new: for every number of rows from five to ten we
 determine the integer $\{2\}$-domination number of the grid for every number of columns. For
 nine rows it is exactly $4n+2$. The proofs treat the problem as a shortest-path problem over
-column states in the $(\min,+)$ algebra. For up to five rows the results are formally verified
+column states in the $(\min,+)$ algebra. For two to five rows the results are formally verified
 in the Lean proof assistant, by certificates that Lean's kernel evaluates; for six to ten rows
 they rest on exact computation, cross-checked as described.
 \end{abstract}
@@ -110,7 +110,8 @@ $n\in\{5,7,10,17,21,25,31,33,36,51\}$, larger by $2$ for $n=1$, and smaller by $
 
 Table~\ref{tab:summary} summarizes the results and how each was verified. Parts (a), (b) and
 (5) are proved in Lean (Section~\ref{sec:lean}). Parts (6) to (9) are proved by exact
-computation with two independent programs, and part (10) by one program
+computation with two independent programs, and part (10) by one program for the lower bound;
+for six to ten rows the upper bounds are also checked directly from the definition
 (Section~\ref{sec:comp}).
 
 \begin{table}[ht]
@@ -418,10 +419,9 @@ columns for each $n$ up to a bound beyond $N+p$. A short script rebuilds each li
 $m\times n$ array, checks the domination condition at every vertex directly, finds repeatable
 blocks as in Section~\ref{sec:upper}, and confirms that the lists and their extensions cover
 every $n\ge1$ with the weights of Theorems~\ref{thm:ll} and~\ref{thm:main}. This was done for
-$1\le m\le 9$; it does not depend on any dynamic programme. For ten rows the lists for
-$n\le125$ were checked in the same way; their repeatable blocks have $52$ columns and do not
-cover every residue of $n$, so for larger $n$ the upper bound in part (10) rests on the first
-program.
+$1\le m\le 10$; it does not depend on any dynamic programme. (For ten rows the repeatable
+block has $52$ columns and weight $228$, and lists of up to $158$ columns are needed to cover
+every residue.)
 
 \emph{Further checks.} The identity $\gamma(m,n)=\gamma(n,m)$ holds for all computed values
 with $m,n\le10$, where the two sides come from automata of different sizes. Exhaustive search

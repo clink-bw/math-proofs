@@ -170,7 +170,7 @@ they need about 700 MB. Six rows would need a table about fifty times larger and
 | Rows 2 to 5 of the results table, for every n | **Lean** (kernel evaluation with `decide +kernel`; standard axioms only) |
 | Rows 6, 7, 8, 9 | **Exact computation**: `compute/fast.c` (the table repeats), and independently `compute/pairs.c`, a different program with no compression of states, which reproduces every value and the repetition |
 | Row 10, lower bound | **Exact computation** by `compute/fast.c` only. The independent program needs more memory than this machine has. The values do agree with all the other rows through γ(m, n) = γ(n, m). |
-| Upper bounds for rows 1 to 9: an explicit valid pattern of the stated weight for every n. For 10 rows the same check was done for n ≤ 125 only; beyond that the upper bound rests on `fast.c` | **Exact computation** straight from the definition: `compute/check_words.py` checks every square of every pattern and the repeatable blocks; no dynamic programme is involved |
+| Upper bounds for rows 1 to 10: an explicit valid pattern of the stated weight for every n | **Exact computation** straight from the definition: `compute/check_words.py` checks every square of every pattern and the repeatable blocks; no dynamic programme is involved |
 | The automaton matches the definition: brute force over all weightings for the 28 grids with at most 14 squares; γ(m, n) = γ(n, m) for all m, n ≤ 10; agreement with Lee and Liu's theorems and their table for 4 × n, n ≤ 100 | **Exact computation**, `compute/check_small.py` and the outputs of `fast.c` |
 | The description of prior work | Literature search; see [novelty-log.md](novelty-log.md) for what was and was not read |
 
@@ -191,7 +191,7 @@ Nothing here rests on a paper-only argument.
 * `compute/pairs.c` - the independent second program.
 * `compute/check_words.py` - checks the patterns printed by `fast.c` from the definition.
 * `compute/results/out_M.txt` - the output of `fast.c` for M rows: the values, the repetition
-  found, and one optimal pattern for each n up to 90 or more.
+  found, and one optimal pattern for each n up to 90 or more (170 for ten rows).
 * `compute/analyze.py`, `compute/check_small.py` - a third, slow implementation for up to 4
   rows, brute force and consistency checks.
 * `paper/` - the draft paper (LaTeX source and PDF).
