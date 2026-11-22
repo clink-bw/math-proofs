@@ -30,8 +30,10 @@ equidistribution; that argument is not formalised here.
 2. a(n)/n tends to (3/2)(1 + sqrt 3): true, and already a consequence of a 1957 theorem of
    T. Bang on the density of such intersections.
 3. a(n) - floor(n (3/2)(1 + sqrt 3)) is zero infinitely often and unbounded above and below:
-   true. See [drift-proof.md](drift-proof.md). The proof is on paper with exact computer checks;
-   its key step (`BeattyGaps.Sqrt3.walk_step`) is in Lean. It has not yet been reviewed.
+   true. See [drift-proof.md](drift-proof.md). Lean verifies the whole argument except one
+   classical fact about Sturmian words, which it takes as an explicit hypothesis
+   (`BeattyGaps.Sqrt3.d_zero_infinitely_often`, `d_unbounded_above`, `d_unbounded_below`, each
+   assuming `BlockHypothesis`). The argument has not yet been reviewed by another person.
 
 ## Prior work
 
@@ -50,7 +52,7 @@ final section states how AI tools were used.
 ## Files
 
 * `../lean/BeattyGaps/` - the Lean proofs. `Basic.lean` has the definitions (`Beatty`, `IsGap`);
-  there is one file per pair.
+  there is one file per pair, and `Sqrt3Drift.lean` for the drift theorem.
 * `compute/gen_lean.py` - writes the Lean files. It finds the case analysis; Lean checks every
   case, so an error in the script can only produce a failed build, not a false theorem.
 * `compute/same_field_case.py`, `compute/independent_case.py` - exact gap sets and frequencies,

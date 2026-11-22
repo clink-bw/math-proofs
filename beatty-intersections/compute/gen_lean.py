@@ -839,7 +839,8 @@ def main():
         with open(os.path.join(OUT, name), "w") as fh:
             fh.write(text)
     with open(os.path.join(OUT, "..", "BeattyGaps.lean"), "w") as fh:
-        fh.write("".join(f"import BeattyGaps.{n[:-5]}\n" for n in files))
+        # Sqrt3Drift.lean is written by hand (it is not a case analysis); keep it in the root.
+        fh.write("".join(f"import BeattyGaps.{n[:-5]}\n" for n in files) + "import BeattyGaps.Sqrt3Drift\n")
     for sp, rows in report:
         print(f"== {sp['name']} ({sp['oeis']}): gaps {sp['gaps']}, {len(rows)} cells")
         for r in rows:

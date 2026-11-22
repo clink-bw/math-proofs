@@ -8,7 +8,7 @@ verified: by the Lean proof assistant, by exact computation, or on paper only.
 | Project | Result | How it was checked |
 |---|---|---|
 | [beatty-intersections](beatty-intersections/) | Exact gap sets for four intersections of Beatty sequences (OEIS A352676, A351415, A346308, A347793). The gap set of A352676 is {2, 3, 5, 6}, so the gap 4 conjectured in the OEIS entry never occurs. | Lean |
-| [beatty-intersections](beatty-intersections/) | The drift conjecture for A352676: the sequence returns to its linear trend infinitely often and strays arbitrarily far on both sides. | Paper proof with exact computer checks; the step rule is in Lean. Not yet reviewed. |
+| [beatty-intersections](beatty-intersections/) | The drift conjecture for A352676: the sequence returns to its linear trend infinitely often and strays arbitrarily far on both sides. | Lean, assuming one classical fact about Sturmian words that is cited, not proved. Not yet reviewed. |
 
 A draft paper covering both rows is at
 [beatty-intersections/paper/beatty-gaps.pdf](beatty-intersections/paper/beatty-gaps.pdf). It has

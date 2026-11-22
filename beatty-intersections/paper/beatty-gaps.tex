@@ -36,8 +36,8 @@ three, this settles the three conjectures in the corresponding entry: the gap se
 conjectured one, the growth rate is as conjectured, and the sequence returns to its linear trend
 infinitely often while deviating from it without bound in both directions. The last statement
 follows from a description of the deviation as a walk with unit steps driven by the gap
-sequence. The gap sets and the step rule of the walk are formally verified in the Lean proof
-assistant.
+sequence. The gap sets are formally verified in the Lean proof assistant, and so is the last
+statement, conditionally on one classical fact about Sturmian words.
 \end{abstract}
 
 \section{Introduction}
@@ -157,9 +157,10 @@ elements differ by $2$ or $3$, and $\fl{(k+2)\beta}-\fl{k\beta}>2\beta-1>4$. The
 \subsection*{Formal verification}
 
 The gap sets in Theorem~\ref{thm:gaps} (that the gaps are exactly those listed, and that each
-occurs at least once) and the step rule underlying Theorem~\ref{thm:walk} are formally verified
-in Lean~4 \cite{lean4} with Mathlib \cite{mathlib}. The frequencies, and the passage from the
-step rule to Theorem~\ref{thm:walk}, are proved here in the usual way and are not formalized.
+occurs at least once) are formally verified in Lean~4 \cite{lean4} with Mathlib \cite{mathlib}.
+So is Theorem~\ref{thm:a352676}(iii), under one explicitly stated hypothesis: the classical fact
+about standard words quoted in Section~\ref{sec:drift}. The frequencies are proved here in the
+usual way and are not formalized.
 Section~\ref{sec:lean} says precisely what is and is not machine-checked. The Lean sources and
 the programs that produced the case analyses are available at
 \url{https://github.com/clink-bw/math-proofs}.
@@ -652,26 +653,42 @@ Theorem~\ref{thm:gaps}, and a theorem \texttt{isGap\_iff} stating that for $g>0$
 \texttt{BeattyGaps.Sqrt2Sqrt3.isGap\_iff} and \texttt{BeattyGaps.CubeRoot2.isGap\_iff}. The
 last is proved for every real $c>0$ with $c^3=2$.
 \item \texttt{BeattyGaps.Sqrt3.four\_not\_gap}: $4$ is not a gap of \seqnum{A352676}.
-\item \texttt{BeattyGaps.Sqrt3.walk\_step}: the first assertion of Lemma~\ref{lem:step}.
+\item \texttt{BeattyGaps.Sqrt3.walk\_step} and \texttt{next\_elem}: Lemma~\ref{lem:step}, in
+the form that $F$ changes by exactly $+1$ across a short gap and $-1$ across a long gap.
+\item \texttt{inS\_iff} and \texttt{F\_eq\_Phi}: Lemma~\ref{lem:kappa} and the identity
+$F(M)=\Phi_{c(1)\cdots c(M)}(4)$.
+\item \texttt{good\_all}: Proposition~\ref{prop:blocks}.
+\item \texttt{drift\_of\_F} and \texttt{drift\_eq\_zero\_iff}: at an element of the intersection,
+$d=0$ if and only if $F=0$; if $F\ge1$ then $d\le-F$; if $F\le-1$ then $d\ge-F$. This is the part
+of Theorem~\ref{thm:walk}(a) needed below; the exact floor formula is not formalized.
+\item The theorems \texttt{d\_zero\_infinitely\_often}, \texttt{d\_unbounded\_above}
+and\\ \texttt{d\_unbounded\_below}: Theorem~\ref{thm:a352676}(iii), for $a(n)$ defined as the $n$-th
+element and $d(n)=a(n)-\fl{(3/2)(1+\sqrt3)\,n}$, \emph{assuming} the hypothesis
+\texttt{BlockHypothesis}.
 \end{itemize}
 
-The proofs follow Sections~\ref{sec:prelim}--\ref{sec:indep}. A program computes the cells
-and, for each cell, a certificate: the gap $g$, the integers witnessing that $m+g$ lies in both
-sequences, and for each $j<g$ the sequence that misses $m+j$ together with the two consecutive
-multiples between which the relevant interval falls. Lean checks each certificate by linear
-arithmetic over the reals, treating the irrational number as an unknown subject to a numerical
-enclosure such as $1.732<\sqrt3<1.7321$. An error in the program can therefore cause a proof
-to fail but cannot cause a false statement to be accepted. The proofs use no axioms beyond the
-three standard ones of Lean's classical logic.
+The hypothesis \texttt{BlockHypothesis} is the statement, quoted in Section~\ref{sec:drift} from
+the theory of standard words, that for every $k\ge1$ the first $q_k$ letters of
+$c(1)c(2)\cdots$ form the word $s_k$. It is not proved in Lean; Mathlib has no theory of
+Sturmian words. Lean does verify it for $k\le4$ (\texttt{block\_small}), which guards against an
+error in the formal definitions.
+
+The proofs of the gap sets follow Sections~\ref{sec:prelim}--\ref{sec:indep}. A program computes
+the cells and, for each cell, a certificate: the gap $g$, the integers witnessing that $m+g$ lies
+in both sequences, and for each $j<g$ the sequence that misses $m+j$ together with the two
+consecutive multiples between which the relevant interval falls. Lean checks each certificate by
+linear arithmetic over the reals, treating the irrational number as an unknown subject to a
+numerical enclosure such as $1.732<\sqrt3<1.7321$. An error in the program can therefore cause a
+proof to fail but cannot cause a false statement to be accepted. The formalization of
+Section~\ref{sec:drift} is written by hand and follows the text. All proofs use no axioms beyond
+the three standard ones of Lean's classical logic.
 
 Not formalized: the frequencies in Theorem~\ref{thm:gaps} and the statement that each gap occurs
-infinitely often (Lean shows that each occurs at least once); Theorem~\ref{thm:a352676}(ii);
-and, in Section~\ref{sec:drift}, everything after Lemma~\ref{lem:step}, including the cited
-fact about standard words and Proposition~\ref{prop:blocks}. These parts were checked by exact
-computation: the identity ``$d(n)=0$ if and only if $G(n)=0$'', the membership rule of
-Lemma~\ref{lem:kappa} and the values of Proposition~\ref{prop:blocks} agree with brute-force
-computation over the ranges stated in the repository, and $d(n)$ was computed exactly for all
-elements up to $2\cdot10^9$, where it ranges from $-22$ to $21$.
+infinitely often (Lean shows that each occurs at least once); Theorem~\ref{thm:a352676}(ii); the
+hypothesis \texttt{BlockHypothesis}; and the precise constants in Theorem~\ref{thm:walk}. As an
+independent check, $d(n)$ was computed exactly for all elements up to $2\cdot10^9$, where it
+ranges from $-22$ to $21$, and the block sums of Proposition~\ref{prop:blocks} agree with
+brute-force computation for all $q_k\le 600000$.
 
 \section{Open questions}\label{sec:open}
 
