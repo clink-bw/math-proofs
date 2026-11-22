@@ -824,6 +824,9 @@ theorem isGap_iff_cbrt {g : ℤ} (hg : 0 < g) :
 ''')
 
 
+HAND_WRITTEN = ["Sqrt3Drift", "Sqrt3Block", "Sqrt3Recur", "Sqrt3Growth"]
+
+
 def main():
     files = {"Basic.lean": BASIC}
     report = []
@@ -839,8 +842,8 @@ def main():
         with open(os.path.join(OUT, name), "w") as fh:
             fh.write(text)
     with open(os.path.join(OUT, "..", "BeattyGaps.lean"), "w") as fh:
-        # Sqrt3Drift.lean and Sqrt3Block.lean are written by hand; keep them in the root.
-        fh.write("".join(f"import BeattyGaps.{n[:-5]}\n" for n in files) + "import BeattyGaps.Sqrt3Drift\nimport BeattyGaps.Sqrt3Block\n")
+        # These files are written by hand; keep them in the root import list.
+        fh.write("".join(f"import BeattyGaps.{n[:-5]}\n" for n in files) + "".join(f"import BeattyGaps.{n}\n" for n in HAND_WRITTEN))
     for sp, rows in report:
         print(f"== {sp['name']} ({sp['oeis']}): gaps {sp['gaps']}, {len(rows)} cells")
         for r in rows:

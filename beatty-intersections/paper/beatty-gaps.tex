@@ -36,8 +36,8 @@ three, this settles the three conjectures in the corresponding entry: the gap se
 conjectured one, the growth rate is as conjectured, and the sequence returns to its linear trend
 infinitely often while deviating from it without bound in both directions. The last statement
 follows from a description of the deviation as a walk with unit steps driven by the gap
-sequence. The gap sets and the last statement are formally verified in the Lean proof
-assistant.
+sequence. The gap sets, and all three statements for that pair, are formally verified in the
+Lean proof assistant.
 \end{abstract}
 
 \section{Introduction}
@@ -158,8 +158,9 @@ elements differ by $2$ or $3$, and $\fl{(k+2)\beta}-\fl{k\beta}>2\beta-1>4$. The
 
 The gap sets in Theorem~\ref{thm:gaps} (that the gaps are exactly those listed, and that each
 occurs at least once) are formally verified in Lean~4 \cite{lean4} with Mathlib \cite{mathlib}.
-So is Theorem~\ref{thm:a352676}(iii). The frequencies are proved here in the usual way and are
-not formalized.
+So is all of Theorem~\ref{thm:a352676}, including that each of its gaps occurs infinitely
+often. The frequencies, and the corresponding statement for the other three pairs, are proved here
+in the usual way and are not formalized.
 Section~\ref{sec:lean} says precisely what is and is not machine-checked. The Lean sources and
 the programs that produced the case analyses are available at
 \url{https://github.com/clink-bw/math-proofs}.
@@ -666,6 +667,12 @@ $c(1)c(2)\cdots$ form the word $s_k$.
 \item The theorems \texttt{drift\_theorem\_zero}, \texttt{drift\_theorem\_above}
 and\\ \texttt{drift\_theorem\_below}: Theorem~\ref{thm:a352676}(iii), for $a(n)$ defined as the $n$-th
 element and $d(n)=a(n)-\fl{(3/2)(1+\sqrt3)\,n}$, with no hypotheses.
+\item \texttt{each\_gap\_infinitely\_often}: for $g\in\{2,3,5,6\}$ there are consecutive elements
+$m$, $m+g$ of the intersection beyond any bound. With \texttt{isGap\_iff} this is the corrected
+form of conjecture (1), that is, Theorem~\ref{thm:a352676}(i).
+\item \texttt{growth\_rate}: Theorem~\ref{thm:a352676}(ii), in the form
+$a(n)/n\to(3/2)(1+\sqrt3)$ as a limit, together with the explicit bound
+$|a(n)-(3/2)(1+\sqrt3)\,n|\le 91\sqrt n$ (\texttt{a\_sub\_le}).
 \end{itemize}
 
 \begin{sloppypar}
@@ -688,9 +695,17 @@ proof to fail but cannot cause a false statement to be accepted. The formalizati
 Section~\ref{sec:drift} is written by hand and follows the text. All proofs use no axioms beyond
 the three standard ones of Lean's classical logic.
 
-Not formalized: the frequencies in Theorem~\ref{thm:gaps} and the statement that each gap occurs
-infinitely often (Lean shows that each occurs at least once); Theorem~\ref{thm:a352676}(ii);
-and the exact formula and constants in Theorem~\ref{thm:walk}. As an
+The two additional statements for \seqnum{A352676} use the same structure. A shift by
+$q_{4j}+q_{4j+2}$ changes $\fl{m\sqrt3}$ by a constant on a long initial range and leaves the
+state modulo $6$ unchanged, so every pattern of consecutive elements recurs; this gives the first.
+For the second, every initial stretch of the word $c$ splits into standard words, the sum of the
+walk over $s_k$ is at most $k+2$ in absolute value by Proposition~\ref{prop:blocks}, and $q_k$
+grows exponentially, which gives $F(M)^2\le 324M$. The resulting error term $\sqrt n$ is far from
+the truth, which is of logarithmic order, but it suffices for the limit.
+
+Not formalized: the frequencies in Theorem~\ref{thm:gaps}; for the three pairs other than
+\seqnum{A352676}, the statement that each gap occurs infinitely often (Lean shows that each
+occurs at least once); and the exact formula and constants in Theorem~\ref{thm:walk}. As an
 independent check, $d(n)$ was computed exactly for all elements up to $2\cdot10^9$, where it
 ranges from $-22$ to $21$, and the block sums of Proposition~\ref{prop:blocks} agree with
 brute-force computation for all $q_k\le 600000$.

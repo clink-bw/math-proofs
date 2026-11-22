@@ -5,3 +5,5 @@ import BeattyGaps.Sqrt2Sqrt3
 import BeattyGaps.CubeRoot2
 import BeattyGaps.Sqrt3Drift
 import BeattyGaps.Sqrt3Block
+import BeattyGaps.Sqrt3Recur
+import BeattyGaps.Sqrt3Growth

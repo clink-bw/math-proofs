@@ -105,5 +105,7 @@ All of these Lean theorems depend only on the three standard axioms.
   proved on paper only; Lean proves slightly weaker statements that suffice for the theorem.
 * The Lean statement is for the reading of the conjecture given above (A352674 in place of
   A352673). Lean cannot check that this is what the OEIS entry intends.
+* (Done since: the growth rate, conjecture (2), and "each gap occurs infinitely often" are
+  proved in Lean in `Sqrt3Growth.lean` and `Sqrt3Recur.lean`.)
 * No analogue has been attempted for the other pairs. For sqrt 2 with sqrt 3 and for the cube
   roots of 2 the same question lives on a two-dimensional torus and looks much harder.
